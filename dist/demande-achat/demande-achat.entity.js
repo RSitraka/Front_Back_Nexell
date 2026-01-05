@@ -61,7 +61,7 @@ __decorate([
 ], DemandeAchat.prototype, "description", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        type: 'enum',
+        type: 'text',
         enum: StatutDemandeAchat,
         default: StatutDemandeAchat.EN_ATTENTE,
     }),

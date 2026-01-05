@@ -63,7 +63,7 @@ __decorate([
 ], Site.prototype, "id", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        type: 'enum',
+        type: 'text',
         enum: TypeTravail,
     }),
     __metadata("design:type", String)
@@ -82,7 +82,7 @@ __decorate([
 ], Site.prototype, "description", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        type: 'enum',
+        type: 'text',
         enum: StatutSite,
         default: StatutSite.EN_COURS,
     }),

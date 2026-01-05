@@ -52,7 +52,7 @@ __decorate([
 ], Depense.prototype, "id", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        type: 'enum',
+        type: 'text',
         enum: TypeDepense,
         default: TypeDepense.AUTRE,
     }),
@@ -68,7 +68,7 @@ __decorate([
 ], Depense.prototype, "description", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        type: 'enum',
+        type: 'text',
         enum: PeriodeDepense,
         nullable: true,
     }),

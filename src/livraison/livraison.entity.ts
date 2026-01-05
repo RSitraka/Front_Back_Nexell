@@ -39,17 +39,17 @@ export class Livraison {
 
   // ---- STATUT ----
   @Column({
-    type: 'enum',
+    type: 'text',
     enum: StatutLivraison,
     default: StatutLivraison.EN_ATTENTE,
   })
   statut: StatutLivraison;
 
   // ---- DATES ----
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'datetime', nullable: true })
   dateDepart: Date | null;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'datetime', nullable: true })
   dateArrivee: Date | null;
 
   @CreateDateColumn()

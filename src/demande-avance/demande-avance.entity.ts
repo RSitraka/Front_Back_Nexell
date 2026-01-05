@@ -28,7 +28,7 @@ export class DemandeAvance {
   motif: string;
 
   @Column({
-    type: 'enum',
+    type: 'text',
     enum: StatutDemandeAvance,
     default: StatutDemandeAvance.EN_ATTENTE,
   })

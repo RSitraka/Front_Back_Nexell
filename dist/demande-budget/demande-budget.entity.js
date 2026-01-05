@@ -45,7 +45,7 @@ __decorate([
 ], DemandeBudget.prototype, "montant", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        type: 'enum',
+        type: 'text',
         enum: StatutDemande,
         default: StatutDemande.EN_ATTENTE,
     }),

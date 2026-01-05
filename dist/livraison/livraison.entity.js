@@ -53,18 +53,18 @@ __decorate([
 ], Livraison.prototype, "site", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        type: 'enum',
+        type: 'text',
         enum: StatutLivraison,
         default: StatutLivraison.EN_ATTENTE,
     }),
     __metadata("design:type", String)
 ], Livraison.prototype, "statut", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'timestamp', nullable: true }),
+    (0, typeorm_1.Column)({ type: 'datetime', nullable: true }),
     __metadata("design:type", Object)
 ], Livraison.prototype, "dateDepart", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'timestamp', nullable: true }),
+    (0, typeorm_1.Column)({ type: 'datetime', nullable: true }),
     __metadata("design:type", Object)
 ], Livraison.prototype, "dateArrivee", void 0);
 __decorate([

@@ -35,7 +35,7 @@ export class Depense {
   id: string;
 
   @Column({
-    type: 'enum',
+    type: 'text',
     enum: TypeDepense,
     default: TypeDepense.AUTRE,
   })
@@ -48,7 +48,7 @@ export class Depense {
   description?: string | null;
 
   @Column({
-    type: 'enum',
+    type: 'text',
     enum: PeriodeDepense,
     nullable: true,
   })

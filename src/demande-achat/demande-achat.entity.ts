@@ -38,7 +38,7 @@ export class DemandeAchat {
   description: string;
 
   @Column({
-    type: 'enum',
+    type: 'text',
     enum: StatutDemandeAchat,
     default: StatutDemandeAchat.EN_ATTENTE,
   })

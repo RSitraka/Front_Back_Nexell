@@ -61,7 +61,7 @@ __decorate([
 ], User.prototype, "prenom", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        type: 'enum',
+        type: 'text',
         enum: user_role_enum_1.UserRole,
         default: user_role_enum_1.UserRole.EMPLOYE,
     }),

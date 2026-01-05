@@ -38,7 +38,7 @@ export class User {
   prenom: string;
 
   @Column({
-    type: 'enum',
+    type: 'text',
     enum: UserRole,
     default: UserRole.EMPLOYE,
   })

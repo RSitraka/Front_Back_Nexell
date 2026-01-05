@@ -22,7 +22,7 @@ export class Fichier {
   url: string; // Chemin ou URL du fichier
 
   @Column({
-    type: 'enum',
+    type: 'text',
     enum: TypeFichier,
   })
   type: TypeFichier;

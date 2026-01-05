@@ -44,7 +44,7 @@ __decorate([
 ], DemandeAvance.prototype, "motif", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        type: 'enum',
+        type: 'text',
         enum: StatutDemandeAvance,
         default: StatutDemandeAvance.EN_ATTENTE,
     }),

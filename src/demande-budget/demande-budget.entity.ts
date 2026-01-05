@@ -27,7 +27,7 @@ export class DemandeBudget {
   montant: number;
 
   @Column({
-    type: 'enum',
+    type: 'text',
     enum: StatutDemande,
     default: StatutDemande.EN_ATTENTE,
   })

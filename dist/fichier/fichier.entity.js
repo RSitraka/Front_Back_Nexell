@@ -37,7 +37,7 @@ __decorate([
 ], Fichier.prototype, "url", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        type: 'enum',
+        type: 'text',
         enum: TypeFichier,
     }),
     __metadata("design:type", String)

@@ -36,7 +36,7 @@ export class Site {
   id: string;
 
   @Column({
-    type: 'enum',
+    type: 'text',
     enum: TypeTravail,
   })
   typeTravail: TypeTravail;
@@ -51,7 +51,7 @@ export class Site {
   description: string;
 
   @Column({
-    type: 'enum',
+    type: 'text',
     enum: StatutSite,
     default: StatutSite.EN_COURS,
   })
