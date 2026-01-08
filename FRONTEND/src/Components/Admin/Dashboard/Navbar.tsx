@@ -5,6 +5,8 @@ import { RiDashboardHorizontalFill } from "react-icons/ri";
 import { FaBuilding } from "react-icons/fa";
 import { FaUsers } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
+import { FaTools } from "react-icons/fa";
+
 
 const Navbar = () => {
     const navigate = useNavigate();
@@ -57,7 +59,7 @@ const Navbar = () => {
                 <div
                     onClick={() => navigate("/matériaux")}
                     className={itemContainer}>
-                    <FaUsers className={`${nexellIcon} group-hover:text-white text-lg transition-colors`} />
+                    <FaTools className={`${nexellIcon} group-hover:text-white text-lg transition-colors`} />
                     <span className="hidden md:block">Matériaux</span>
                 </div>
 

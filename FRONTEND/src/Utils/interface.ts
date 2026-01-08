@@ -16,7 +16,7 @@ interface Employee {
   address: string;
   phone: string;
   cinScan?: File | null;
-  certificates: File[];
+  certificates?: File[];
 }
 
 interface SiteMaterial {

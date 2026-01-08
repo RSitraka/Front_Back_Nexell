@@ -1,7 +1,11 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
-import Overview from './Overview'
 import Dashboard from "./Pages/Admin/Dashboard";
+import Accueil from "./Pages/Admin/Accueil";
+import Sites from "./Pages/Admin/Sites";
+import Employes from "./Pages/Admin/Employe";
+import Materiaux from "./Pages/Admin/Materiaux";
+import Stats from "./Pages/Admin/Stats";
 
 
 const NotFound = () => {
@@ -13,18 +17,13 @@ const NotFound = () => {
   );
 };
 
-const Accueil = () => <div className="text-white">Page Accueil</div>;
-const Sites = () => <div className="text-white">Page Sites & Travaux</div>;
-const Employes = () => <div className="text-white">Page Employés</div>;
-const Materiaux = () => <div className="text-white">Page Matériaux</div>;
-const Stats = () => <div className="text-white">Page Tableau de bord</div>;
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path='/' element={<Dashboard />}>
-          <Route index element={<Overview />} />
+          <Route index element={<Accueil />} />
           <Route path='sites' element={<Sites />} />
           <Route path='employé' element={<Employes />} />
           <Route path='matériaux' element={<Materiaux />} />

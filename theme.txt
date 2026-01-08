@@ -1,0 +1,24 @@
+Voici les codes couleur approximatifs du logo, extraits visuellement de l’image (les valeurs peuvent légèrement varier selon l’écran et la compression) :
+
+1. Symbole (dégradé vert → bleu)
+
+Vert : #208060
+
+Bleu-vert : #409090
+
+Bleu : #6090A0
+
+👉 Le symbole utilise un dégradé allant d’un vert soutenu vers un bleu clair.
+
+2. Texte « nexell » (rouge)
+
+Rouge principal : #A02020
+(équivalent plus vif souvent utilisé : #C62828)
+
+3. Slogan « NEXT EVOLUTION FOR EXCELLENCY »
+
+Gris foncé : #555555 à #666666
+
+4. Fond
+
+Gris très clair / argenté : #C0C0C0
