@@ -8,15 +8,16 @@ import {
 import { TypeFichier } from '../fichier.entity';
 
 export class CreateFichierDto {
-  @IsNotEmpty()
-  url: string;
+  @IsString()
+  @IsOptional()
+  url?: string;
 
   @IsEnum(TypeFichier, {
     message:
       'Type invalide. Valeurs possibles : Scan de facture, Document, Autre',
   })
-  @IsNotEmpty()
-  type: TypeFichier;
+  @IsOptional()
+  type?: TypeFichier;
 
   @IsString()
   @IsOptional()

@@ -1,0 +1,29 @@
+curl -X POST http://localhost:3000/api/fichiers \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3YjUyNmE0My1mOTdjLTRmNzItYWI1MC1iNDQ0M2U5ZTBlODEiLCJlbWFpbCI6ImFkbWluQG1hc3RlcjIubWciLCJyb2xlIjoiQWRtaW4iLCJpYXQiOjE3Njc2MTcxMjEsImV4cCI6MTc2ODIyMTkyMX0.eLvlV-raaFSLSH6lWVeux7jdUpgZxGq8PK8-1KdAuEY" \
+  -F "pdf=@/home/zsailine/Downloads/zsailineCV.pdf" \
+-F "type=Document" \
+  -F "description=CV employé" \
+  -F "siteId=12ab137d-9f31-400a-8612-1db05b01585e"
+
+curl -X GET "http://localhost:3000/api/fichiers?siteId=12ab137d-9f31-400a-8612-1db05b01585e" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3YjUyNmE0My1mOTdjLTRmNzItYWI1MC1iNDQ0M2U5ZTBlODEiLCJlbWFpbCI6ImFkbWluQG1hc3RlcjIubWciLCJyb2xlIjoiQWRtaW4iLCJpYXQiOjE3Njc2MTcxMjEsImV4cCI6MTc2ODIyMTkyMX0.eLvlV-raaFSLSH6lWVeux7jdUpgZxGq8PK8-1KdAuEY"
+
+curl -X DELETE \
+"http://localhost:3000/api/fichiers/feead8e8-0a33-4141-935a-0880041e531e" \
+ -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3YjUyNmE0My1mOTdjLTRmNzItYWI1MC1iNDQ0M2U5ZTBlODEiLCJlbWFpbCI6ImFkbWluQG1hc3RlcjIubWciLCJyb2xlIjoiQWRtaW4iLCJpYXQiOjE3Njc2MTcxMjEsImV4cCI6MTc2ODIyMTkyMX0.eLvlV-raaFSLSH6lWVeux7jdUpgZxGq8PK8-1KdAuEY"
+
+
+curl -X POST http://localhost:3000/api/photos \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3YjUyNmE0My1mOTdjLTRmNzItYWI1MC1iNDQ0M2U5ZTBlODEiLCJlbWFpbCI6ImFkbWluQG1hc3RlcjIubWciLCJyb2xlIjoiQWRtaW4iLCJpYXQiOjE3Njc2MTcxMjEsImV4cCI6MTc2ODIyMTkyMX0.eLvlV-raaFSLSH6lWVeux7jdUpgZxGq8PK8-1KdAuEY" \
+  -F "pdf=@/home/zsailine/Downloads/image.jpg" \
+  -F "description=CV employé" \
+  -F "siteId=12ab137d-9f31-400a-8612-1db05b01585e"
+
+  curl -X GET "http://localhost:3000/api/photos?siteId=12ab137d-9f31-400a-8612-1db05b01585e" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3YjUyNmE0My1mOTdjLTRmNzItYWI1MC1iNDQ0M2U5ZTBlODEiLCJlbWFpbCI6ImFkbWluQG1hc3RlcjIubWciLCJyb2xlIjoiQWRtaW4iLCJpYXQiOjE3Njc2MTcxMjEsImV4cCI6MTc2ODIyMTkyMX0.eLvlV-raaFSLSH6lWVeux7jdUpgZxGq8PK8-1KdAuEY"
+
+curl -X DELETE \
+"http://localhost:3000/api/photos/08c9dde3-fce1-44a1-9509-201bfa41b464" \
+ -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3YjUyNmE0My1mOTdjLTRmNzItYWI1MC1iNDQ0M2U5ZTBlODEiLCJlbWFpbCI6ImFkbWluQG1hc3RlcjIubWciLCJyb2xlIjoiQWRtaW4iLCJpYXQiOjE3Njc2MTcxMjEsImV4cCI6MTc2ODIyMTkyMX0.eLvlV-raaFSLSH6lWVeux7jdUpgZxGq8PK8-1KdAuEY"
+
+

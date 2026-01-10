@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FaTrash, FaPlus, FaFilePdf, FaCamera, FaCar, FaUsers, FaTools, FaCoins, FaSave } from 'react-icons/fa';
 import type { Material, Employee } from '../../Utils/interface'; // Import des mocks
 import { RiInformationLine } from "react-icons/ri";
+
 const mockMaterials: Material[] = [
     { id: '1', name: 'Câble RJ45', model: 'Cat6', supplier: 'ElecPro', price: 1500 },
     { id: '2', name: 'Marteau', model: 'Acier Trempé', supplier: 'BricoTout', price: 25000 },
@@ -9,8 +10,8 @@ const mockMaterials: Material[] = [
 ];
 
 const mockEmployees: Employee[] = [
-    { id: '1', firstName: 'Jean', lastName: 'Rakoto', phone: '034 00 000 00', address:'yo' },
-    { id: '2', firstName: 'Paul', lastName: 'Andriama', phone: '032 00 000 00', address:'yo' },
+    { id: '1', firstName: 'Jean', lastName: 'Rakoto', phone: '034 00 000 00', address: 'yo' },
+    { id: '2', firstName: 'Paul', lastName: 'Andriama', phone: '032 00 000 00', address: 'yo' },
 ];
 
 const Sites = () => {
@@ -18,14 +19,13 @@ const Sites = () => {
     const [status, setStatus] = useState('En cours');
     const [gpsLink, setGpsLink] = useState('');
     const [description, setDescription] = useState('');
-    
-    const [photos, setPhotos] = useState<File[]>([]);
+
     const [files, setFiles] = useState<File[]>([]);
-    
+
     const [selectedMaterials, setSelectedMaterials] = useState<{ id: string, qty: number, priceRef: number }[]>([]);
     const [otherExpenses, setOtherExpenses] = useState<{ id: string, desc: string, amount: number }[]>([]);
     const [siteEmployees, setSiteEmployees] = useState<{ id: string, salary: number }[]>([]);
-    
+
     const [vehicle, setVehicle] = useState({
         active: false,
         plate: '',
@@ -34,12 +34,33 @@ const Sites = () => {
         cost: 0
     });
 
+    const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
+    const [photos, setPhotos] = useState<File[]>([]);
+
+    useEffect(() => {
+        if (photos.length === 0) {
+            setPhotoPreviews([]);
+            return;
+        }
+
+        const objectUrls = photos.map((file) =>
+            URL.createObjectURL(file)
+        );
+
+        setPhotoPreviews(objectUrls);
+
+        return () => {
+            objectUrls.forEach((url) => URL.revokeObjectURL(url));
+        };
+    }, [photos]);
+
+
     const calculateTotal = () => {
         const matTotal = selectedMaterials.reduce((acc, item) => acc + (item.priceRef * item.qty), 0);
         const expTotal = otherExpenses.reduce((acc, item) => acc + item.amount, 0);
         const empTotal = siteEmployees.reduce((acc, item) => acc + item.salary, 0);
         const vehTotal = vehicle.active ? vehicle.cost : 0;
-        
+
         return matTotal + expTotal + empTotal + vehTotal;
     };
 
@@ -76,6 +97,10 @@ const Sites = () => {
     const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) setPhotos([...photos, ...Array.from(e.target.files)]);
     };
+    const removePhoto = (index: number) => {
+        setPhotos((prev) => prev.filter((_, i) => i !== index));
+    };
+
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) setFiles([...files, ...Array.from(e.target.files)]);
     };
@@ -128,10 +153,10 @@ const Sites = () => {
                             <option key={m.id} value={m.id}>{m.name} ({m.model}) - {m.price} Ar</option>
                         ))}
                     </select>
-                    <button 
+                    <button
                         onClick={() => {
                             const select = document.getElementById('matSelect') as HTMLSelectElement;
-                            if(select.value) addMaterial(select.value);
+                            if (select.value) addMaterial(select.value);
                         }}
                         className={gradientBtn}
                     >Ajouter</button>
@@ -156,8 +181,8 @@ const Sites = () => {
                                         <td className="px-4 py-2">{matInfo?.name}</td>
                                         <td className="px-4 py-2">{item.priceRef} Ar</td>
                                         <td className="px-4 py-2">
-                                            <input type="number" min="1" defaultValue={"1"} value={item.qty} onChange={(e) => updateMaterialQty(idx, parseInt(e.target.value))} 
-											className="w-16 bg-[#101728] rounded p-1" />
+                                            <input type="number" min="1" defaultValue={"1"} value={item.qty} onChange={(e) => updateMaterialQty(idx, parseInt(e.target.value))}
+                                                className="w-16 bg-[#101728] rounded p-1" />
                                         </td>
                                         <td className="px-4 py-2 font-bold">{(item.priceRef * item.qty).toLocaleString()} Ar</td>
                                         <td className="px-4 py-2">
@@ -179,9 +204,9 @@ const Sites = () => {
                 <h2 className={sectionTitle}><FaCoins /> Autres Dépenses (Batellage, Divers)</h2>
                 {otherExpenses.map((exp, idx) => (
                     <div key={idx} className="flex gap-2 mb-2 items-center">
-                        <input 
-                            type="text" 
-                            placeholder="Description (ex: Batellage)" 
+                        <input
+                            type="text"
+                            placeholder="Description (ex: Batellage)"
                             className={`${inputStyle}`}
                             value={exp.desc}
                             onChange={(e) => {
@@ -190,9 +215,9 @@ const Sites = () => {
                                 setOtherExpenses(updated);
                             }}
                         />
-                        <input 
-                            type="number" 
-                            placeholder="Montant" 
+                        <input
+                            type="number"
+                            placeholder="Montant"
                             className={`${inputStyle}`}
                             value={exp.amount === 0 ? '' : exp.amount}
                             onChange={(e) => {
@@ -218,19 +243,19 @@ const Sites = () => {
                 <div className="flex justify-between items-center mb-4 border-b border-gray-700 pb-2">
                     <h2 className="text-[#6090A0] text-lg font-bold flex items-center gap-2"><FaCar /> Véhicule</h2>
                     <label className="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" checked={vehicle.active} onChange={() => setVehicle({...vehicle, active: !vehicle.active})} className="w-5 h-5 accent-[#208060]" />
+                        <input type="checkbox" checked={vehicle.active} onChange={() => setVehicle({ ...vehicle, active: !vehicle.active })} className="w-5 h-5 accent-[#208060]" />
                         <span className="text-sm">Véhicule utilisé ?</span>
                     </label>
                 </div>
-                
+
                 {vehicle.active && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2">
-                        <input type="text" placeholder="Matricule" className={inputStyle} value={vehicle.plate} onChange={e => setVehicle({...vehicle, plate: e.target.value})} />
-                        <input type="text" placeholder="Agence" className={inputStyle} value={vehicle.agency} onChange={e => setVehicle({...vehicle, agency: e.target.value})} />
-                        <input type="text" placeholder="Nom Chauffeur / ID" className={inputStyle} value={vehicle.driver} onChange={e => setVehicle({...vehicle, driver: e.target.value})} />
+                        <input type="text" placeholder="Matricule" className={inputStyle} value={vehicle.plate} onChange={e => setVehicle({ ...vehicle, plate: e.target.value })} />
+                        <input type="text" placeholder="Agence" className={inputStyle} value={vehicle.agency} onChange={e => setVehicle({ ...vehicle, agency: e.target.value })} />
+                        <input type="text" placeholder="Nom Chauffeur / ID" className={inputStyle} value={vehicle.driver} onChange={e => setVehicle({ ...vehicle, driver: e.target.value })} />
                         <div>
                             <label className="text-xs text-gray-400">Total (Carburant + Location)</label>
-                            <input type="number" placeholder="Coût Total" className={inputStyle} value={vehicle.cost === 0 ? '' : vehicle.cost} onChange={e => setVehicle({...vehicle, cost: Number(e.target.value)})} />
+                            <input type="number" placeholder="Coût Total" className={inputStyle} value={vehicle.cost === 0 ? '' : vehicle.cost} onChange={e => setVehicle({ ...vehicle, cost: Number(e.target.value) })} />
                         </div>
                     </div>
                 )}
@@ -244,10 +269,10 @@ const Sites = () => {
                             <option key={e.id} value={e.id}>{e.firstName} {e.lastName}</option>
                         ))}
                     </select>
-                    <button 
+                    <button
                         onClick={() => {
                             const select = document.getElementById('empSelect') as HTMLSelectElement;
-                            if(select.value) addEmployee(select.value);
+                            if (select.value) addEmployee(select.value);
                         }}
                         className={gradientBtn}
                     >Ajouter</button>
@@ -263,9 +288,9 @@ const Sites = () => {
                             </div>
                             <div className="flex items-center gap-2">
                                 <label className="text-xs text-gray-400">Salaire/Avance:</label>
-                                <input 
-                                    type="number" 
-                                    className={`${inputStyle} w-32`} 
+                                <input
+                                    type="number"
+                                    className={`${inputStyle} w-32`}
                                     value={siteEmp.salary === 0 ? '' : siteEmp.salary}
                                     onChange={(e) => updateSalary(idx, Number(e.target.value))}
                                 />
@@ -284,16 +309,46 @@ const Sites = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div className={cardStyle}>
                     <h2 className={sectionTitle}><FaCamera /> Photos du site</h2>
-                    <input type="file" multiple accept="image/*" onChange={handlePhotoUpload} className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#208060]/20 file:text-[#409090] hover:file:bg-[#208060]/30"/>
+                    {photoPreviews.length ?
+                        (<div className="flex flex-wrap gap-4">
+                            {photoPreviews.map((src, index) => (
+                                <img
+                                    key={index}
+                                    src={src}
+                                    alt={`preview-${index}`}
+                                    className="w-32 h-32 object-cover rounded"
+                                />
+                            ))}
+                        </div>) :
+                        (<div className="h-20 flex items-center justify-center bg-[#1a2332] rounded mb-2 text-gray-600 text-xs">
+                            Aucun aperçu
+                        </div>)
+
+                    }
+                    <input type="file" multiple accept="image/*" onChange={handlePhotoUpload} className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#208060]/20 file:text-[#409090] hover:file:bg-[#208060]/30" />
                     <div className="mt-2 flex flex-wrap gap-2">
                         {photos.map((f, i) => (
-                            <span key={i} className="text-xs bg-gray-700 px-2 py-1 rounded text-white">{f.name}</span>
+                            <div
+                                key={i}
+                                className="flex items-center gap-2 bg-gray-700 px-2 py-1 rounded text-white text-xs"
+                            >
+                                <span>{f.name}</span>
+
+                                <text
+                                    type="button"
+                                    onClick={() => removePhoto(i)}
+                                    className="text-black hover:text-white bg-none hover:cursor-pointer"
+                                >
+                                    ✕
+                                </text>
+                            </div>
                         ))}
                     </div>
+
                 </div>
                 <div className={cardStyle}>
                     <h2 className={sectionTitle}><FaFilePdf /> Fichiers & Scans</h2>
-                    <input type="file" multiple accept=".pdf,.doc" onChange={handleFileUpload} className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#208060]/20 file:text-[#409090] hover:file:bg-[#208060]/30"/>
+                    <input type="file" multiple accept=".pdf,.doc" onChange={handleFileUpload} className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#208060]/20 file:text-[#409090] hover:file:bg-[#208060]/30" />
                     <div className="mt-2 flex flex-wrap gap-2">
                         {files.map((f, i) => (
                             <span key={i} className="text-xs bg-gray-700 px-2 py-1 rounded text-white">{f.name}</span>
@@ -302,11 +357,9 @@ const Sites = () => {
                 </div>
             </div>
 
-            {/* --- FOOTER TOTAL --- */}
             <div className="fixed bottom-0 left-0 lg:left-0 w-full bg-[#101728] border-t border-[#208060] p-4 shadow-2xl z-40">
-                <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 pl-0 lg:pl-64"> 
-                    {/* Note: pl-64 compense la sidebar sur desktop si nécessaire, ou ajuster selon layout */}
-                    
+                <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 pl-0 lg:pl-64">
+
                     <div className="flex flex-col">
                         <span className="text-gray-400 text-sm">TOTAL DÉPENSES DU SITE</span>
                         <span className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#208060] to-[#409090]">

@@ -14,7 +14,10 @@ export class FichierService {
   ) {}
 
   async create(createFichierDto: CreateFichierDto): Promise<Fichier> {
-    const fichier = this.fichierRepository.create(createFichierDto);
+    const fichier = this.fichierRepository.create({
+      ...createFichierDto,
+      site: { id: createFichierDto.siteId },
+    });
     return await this.fichierRepository.save(fichier);
   }
 
@@ -54,7 +57,7 @@ export class FichierService {
   async remove(id: string): Promise<void> {
     const result = await this.fichierRepository.delete(id);
     if (result.affected === 0) {
-      throw new NotFoundException(`Fichier avec l'ID ${id} non trouvé`);
+      throw new NotFoundException(`Fichier non trouvé`);
     }
   }
 }

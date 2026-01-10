@@ -175,7 +175,8 @@ const Employes = () => {
 									type="file"
 									accept="image/*"
 									onChange={e => setCinFile(e.target.files ? e.target.files[0] : null)}
-									className="block w-full text-xs text-slate-500 file:mr-2 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-[#208060]/20 file:text-[#409090] hover:file:bg-[#208060]/30 cursor-pointer"
+									className="block w-full text-xs text-slate-500 file:mr-2 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold
+									 file:bg-[#208060]/20 file:text-[#409090] hover:file:bg-[#208060]/30 cursor-pointer"
 								/>
 							</div>
 

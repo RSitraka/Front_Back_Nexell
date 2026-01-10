@@ -31,6 +31,7 @@ async function bootstrap() {
       transform: true,
     }),
   );
+  
   // SEED ADMIN
   /* const seedService = app.get(SeedAdminService);
   await seedService.seed();

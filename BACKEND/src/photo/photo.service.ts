@@ -14,7 +14,10 @@ export class PhotoService {
   ) {}
 
   async create(createPhotoDto: CreatePhotoDto): Promise<Photo> {
-    const Photo = this.PhotoRepository.create(createPhotoDto);
+    const Photo = this.PhotoRepository.create({
+      ...createPhotoDto,
+      site: { id: createPhotoDto.siteId },
+    });
     return await this.PhotoRepository.save(Photo);
   }
 
@@ -38,7 +41,7 @@ export class PhotoService {
   async findBySite(siteId: string): Promise<Photo[]> {
     return await this.PhotoRepository.find({
       where: { site: { id: siteId } },
-      relations: ['depenses'],
+      relations: ['site'],
     });
   }
 
