@@ -6,6 +6,8 @@ import Sites from "./Pages/Admin/Sites";
 import Employes from "./Pages/Admin/Employe";
 import Materiaux from "./Pages/Admin/Materiaux";
 import Stats from "./Pages/Admin/Stats";
+import Login from "./Pages/Login";
+import { AuthProvider } from "./Providers/AuthProvider";
 
 
 const NotFound = () => {
@@ -20,18 +22,24 @@ const NotFound = () => {
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path='/' element={<Dashboard />}>
-          <Route index element={<Accueil />} />
-          <Route path='sites' element={<Sites />} />
-          <Route path='employé' element={<Employes />} />
-          <Route path='matériaux' element={<Materiaux />} />
-          <Route path='dashboard' element={<Stats />} />
-        </Route>
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Router>
+    <>
+      <AuthProvider>
+        <Router>
+          <Routes>
+            <Route path='/login' element={<Login />} />
+            <Route path='/register' element={<Login />} />
+            <Route path='/' element={<Dashboard />}>
+              <Route index element={<Accueil />} />
+              <Route path='sites' element={<Sites />} />
+              <Route path='employé' element={<Employes />} />
+              <Route path='matériaux' element={<Materiaux />} />
+              <Route path='dashboard' element={<Stats />} />
+            </Route>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Router>
+      </AuthProvider>
+    </>
   )
 }
 

@@ -13,7 +13,6 @@ export class AuthService {
   ) {}
 
   async login(dto: LoginDto) {
-    console.log('mandalo ato');
     const user = await this.userService.findByEmail(dto.email);
     if (!user)
       throw new UnauthorizedException('Email ou mot de passe incorrect');
@@ -22,10 +21,10 @@ export class AuthService {
     if (!isMatch)
       throw new UnauthorizedException('Email ou mot de passe incorrect');
 
-    const payload = { sub: user.id, email: user.email, role: user.role };
+    const payload = { sub: user.id, email: user.email, role: user.role, roleId: user.employe?.id };
     return {
       access_token: this.jwtService.sign(payload),
-      user: { id: user.id, email: user.email, role: user.role },
+      user: { id: user.id, email: user.email, role: user.role, roleId: user.employe?.id },
     };
   }
 }

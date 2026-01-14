@@ -6,6 +6,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { AppModule } from './app.module';
 import { Reflector } from '@nestjs/core';
 import { SeedAdminService } from './seed/seed-admin.service';
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -19,7 +20,7 @@ async function bootstrap() {
 
   // CORS
   app.enableCors({
-    origin: ['http://localhost:3000', 'http://localhost:4200'],
+    origin: ['http://localhost:3000', 'http://localhost:4200', 'http://localhost:5173',],
     credentials: true,
   });
 
@@ -39,6 +40,7 @@ async function bootstrap() {
   // RÉCUPÈRE DEPUIS UserModule
   const seedService = app.get(SeedAdminService);
   await seedService.seed();
+  app.use(cookieParser());
   // Préfixe API pour les routes
   app.setGlobalPrefix('api');
 
