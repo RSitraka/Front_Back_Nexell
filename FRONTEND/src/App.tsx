@@ -8,6 +8,8 @@ import Materiaux from "./Pages/Admin/Materiaux";
 import Stats from "./Pages/Admin/Stats";
 import Login from "./Pages/Login";
 import { AuthProvider } from "./Providers/AuthProvider";
+import ProtectedRoutes from "./Providers/ProtectedRoute";
+import { Suspense } from "react";
 
 
 const NotFound = () => {
@@ -28,7 +30,15 @@ function App() {
           <Routes>
             <Route path='/login' element={<Login />} />
             <Route path='/register' element={<Login />} />
-            <Route path='/' element={<Dashboard />}>
+            <Route
+              path="/"
+              element={
+                <ProtectedRoutes>
+                  <Suspense fallback={<div>Loading...</div>}>
+                    <Dashboard />
+                  </Suspense>
+                </ProtectedRoutes>
+              }>
               <Route index element={<Accueil />} />
               <Route path='sites' element={<Sites />} />
               <Route path='employé' element={<Employes />} />

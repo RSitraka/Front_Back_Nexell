@@ -28,12 +28,7 @@ const Accueil = () => {
 
     const gradientBrand = "bg-gradient-to-r from-[#208060] via-[#409090] to-[#6090A0]";
     const textRed = "text-[#A02020]";
-
-    const {user} = useAuth();
-
-    useEffect(() => {
-        console.log(user);
-    }, [user]);
+    
     return (
         <div className="space-y-6 text-white">
             <div className="flex justify-between items-center">

@@ -9,6 +9,7 @@ interface AuthInterface {
 	register: (username: string, password: string, email: string) => any,
 	logout: () => void,
 	setUser: (username: string | null) => void,
+	setRole: (role: string | null) => void,
 	setLoading: (loading: boolean) => void,
 	loading: boolean,
 	isAuthenticated: boolean,
@@ -54,7 +55,7 @@ const AuthProvider = ({ children }: any) => {
 			}
 			return { success: false, error: err.message, requires2FA: false };
 		}
-	}
+	} 
 
 	const register = async (username: string, password: string, email: string) => {
 		try {
@@ -84,8 +85,6 @@ const AuthProvider = ({ children }: any) => {
 		}
 	}
 
-
-
 	const value = {
 		user,
 		role,
@@ -93,6 +92,7 @@ const AuthProvider = ({ children }: any) => {
 		logout,
 		register,
 		setUser,
+		setRole,
 		setLoading,
 		loading,
 		isAuthenticated: !!user,

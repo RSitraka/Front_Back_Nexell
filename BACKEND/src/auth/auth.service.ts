@@ -1,5 +1,5 @@
 // src/auth/auth.service.ts
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -10,7 +10,7 @@ export class AuthService {
   constructor(
     private userService: UserService,
     private jwtService: JwtService,
-  ) {}
+  ) { }
 
   async login(dto: LoginDto) {
     const user = await this.userService.findByEmail(dto.email);
@@ -25,6 +25,19 @@ export class AuthService {
     return {
       access_token: this.jwtService.sign(payload),
       user: { id: user.id, email: user.email, role: user.role, roleId: user.employe?.id },
+    };
+  }
+  
+  async verify(token: any) {
+    const payload = this.jwtService.verify(token);
+    const user = await this.userService.findOne(payload.sub);
+    if (!user) throw new NotFoundException();
+
+    return {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      roleId: user.employe?.id
     };
   }
 }

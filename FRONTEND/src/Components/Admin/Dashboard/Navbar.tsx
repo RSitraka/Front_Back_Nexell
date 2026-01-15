@@ -1,16 +1,20 @@
 import {
     IoHome,
+    IoLogOutOutline,
 } from "react-icons/io5";
 import { RiDashboardHorizontalFill } from "react-icons/ri";
 import { FaBuilding } from "react-icons/fa";
 import { FaUsers } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 import { FaTools } from "react-icons/fa";
+import api from "../../../Utils/axios";
+import { useAuth } from "../../../Providers/AuthProvider";
 
 
 const Navbar = () => {
     const navigate = useNavigate();
 
+    const {logout} = useAuth();
     const nexellRed = "text-[#C62828]";
     const nexellText = "text-[#555555]";
     const nexellIcon = "text-[#208060]";
@@ -46,7 +50,7 @@ const Navbar = () => {
                     onClick={() => navigate("/sites")}
                     className={itemContainer}>
                     <FaBuilding className={`${nexellIcon} group-hover:text-white text-lg transition-colors`} />
-                    <span className="hidden md:block">Sites & Travaux</span>
+                    <span className="hidden md:block">Sites</span>
                 </div>
 
                 <div
@@ -68,6 +72,12 @@ const Navbar = () => {
                     className={`${itemContainer}`} >
                     <RiDashboardHorizontalFill className={`${nexellIcon} group-hover:text-white text-lg transition-colors`} />
                     <span className="hidden md:block">Tableau de bord</span>
+                </div>
+                <div
+                    onClick={logout}
+                    className={`${itemContainer}`} >
+                    <IoLogOutOutline className={`${nexellIcon} group-hover:text-white text-lg transition-colors`} />
+                    <span className="hidden md:block">Déconnection</span>
                 </div>
             </div>
         </div>
