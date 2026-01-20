@@ -24,7 +24,7 @@ export class FichierController {
   constructor(private readonly FichierService: FichierService) { }
 
   @Post()
-  @UseInterceptors(FileInterceptor('pdf', multerOptionsFiles))
+  @UseInterceptors(FileInterceptor('fichiers', multerOptionsFiles))
   async create(
     @UploadedFile() file: Express.Multer.File,
     @Body() dto: CreateFichierDto,

@@ -26,20 +26,27 @@ export class SiteService {
   async findOne(id: string): Promise<Site> {
     const site = await this.siteRepository.findOne({
       where: { id },
-      relations: [
-        'employes',
-        'materiels',
-        'vehicules',
-        'depenses',
-        'photos',
-        'fichiers',
-      ],
+      relations: {
+        employes: true,
+        materiels: true,
+        vehicules: true,
+        depenses: true,
+        photos: true,
+        fichiers: true,
+        demandesMateriel: {
+          materiel: true,
+          demandeur: true,
+        },
+      },
     });
+  
     if (!site) {
       throw new NotFoundException(`Site non trouvé`);
     }
+  
     return site;
   }
+  
 
   async getTotalDepenses(id: string): Promise<{ total: number; parType: any }> {
     const site = await this.findOne(id);

@@ -23,7 +23,7 @@ export class PhotoController {
   constructor(private readonly PhotoService: PhotoService) { }
 
   @Post()
-  @UseInterceptors(FileInterceptor('image', multerOptionsPhotos))
+  @UseInterceptors(FileInterceptor('photos', multerOptionsPhotos))
   async create(
     @UploadedFile() file: Express.Multer.File,
     @Body() dto: CreatePhotoDto,

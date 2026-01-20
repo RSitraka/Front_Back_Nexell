@@ -23,23 +23,10 @@ export class MaterielService {
   ) {}
 
   async create(createMaterielDto: CreateMaterielDto): Promise<Materiel> {
-    const { siteId, prix, nom, modele, nomFournisseur } = createMaterielDto;
+    const { prix, nom, modele, nomFournisseur } = createMaterielDto;
 
-    if (!siteId) {
-      throw new BadRequestException('siteId is required');
-    }
-
-    const materiel = this.materielRepository.create(createMaterielDto);
+    const materiel = this.materielRepository.create({prix, nom, modele, nomFournisseur});
     const savedMateriel = await this.materielRepository.save(materiel);
-
-    // 1. Créer une dépense automatique
-    await this.depenseService.create({
-      montant: prix,
-      description: `Achat matériel : ${nom} ${modele} (Fournisseur: ${nomFournisseur})`,
-      type: TypeDepense.ACHAT_MATERIEL, // Changed to match the correct property name
-      siteId,
-      materielId: savedMateriel.id, // Lien avec le matériel
-    });
 
     return savedMateriel;
   }

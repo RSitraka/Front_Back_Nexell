@@ -24,7 +24,7 @@ export class DemandeMaterielService {
     @InjectRepository(Site)
     private siteRepo: Repository<Site>,
     private depenseService: DepenseService, // Inject DepenseService
-  ) {}
+  ) { }
 
   /**
    * Crée une nouvelle demande de matériel
@@ -66,13 +66,20 @@ export class DemandeMaterielService {
    */
   async findAll(siteId?: string): Promise<DemandeMateriel[]> {
     const where: any = {};
-    if (siteId) where.site = { id: siteId };
+    if (siteId) {
+      where.site = { id: siteId };
+    }
 
-    return await this.demandeRepo.find({
+    return this.demandeRepo.find({
       where,
-      relations: ['demandeur', 'materiel', 'site'],
+      relations: {
+        site: true,
+        materiel: true,
+        demandeur: true,
+      },
     });
   }
+
 
   /**
    * Récupère une demande par ID
@@ -139,4 +146,10 @@ export class DemandeMaterielService {
     demande.statut = StatutDemande.REJETEE;
     return await this.demandeRepo.save(demande);
   }
+
+  async delete(id: string) {
+    const demande = await this.findOne(id);
+    await this.demandeRepo.remove(demande);
+  }
+
 }

@@ -8,6 +8,10 @@ import {
 
 export class CreateMaterielDto {
   @IsString()
+  @IsOptional()
+  id?: string;
+
+  @IsString()
   @IsNotEmpty()
   nomFournisseur: string;
 

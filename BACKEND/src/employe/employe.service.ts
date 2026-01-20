@@ -59,9 +59,9 @@ export class EmployeService {
       site: site ?? undefined, // ← TypeScript OK
     });
 
-    const savedUser = await this.userRepository.save(user);
 
     // 2. Créer l'Employe
+    const savedUser = await this.userRepository.save(user);
     const employe = this.employeRepository.create({
       nom: dto.nom,
       prenom: dto.prenom,
@@ -69,7 +69,7 @@ export class EmployeService {
       adresse: dto.adresse,
       numeroTelephone: dto.numeroTelephone,
       nationalite: dto.nationalite,
-      salaire: dto.salaire ?? 0,
+      salaire: Number(dto.salaire) ?? 0,
       user: savedUser,
       site: site ?? undefined,
     });
@@ -90,7 +90,7 @@ export class EmployeService {
 
   async findAll(): Promise<Employe[]> {
     return await this.employeRepository.find({
-      relations: ['site'],
+      relations: ['site', 'depenses', 'scanCertificats', 'scanPhotoCIN'],
     });
   }
 
@@ -129,6 +129,20 @@ export class EmployeService {
       employe.scanCertificats ??= [];
       employe.scanCertificats.push(...savedFichiers);
     }
+    if ('siteId' in dto) {
+      if (dto.siteId === null) {
+        employe.site = null;
+      } else {
+        const site = await this.siteRepository.findOneBy({
+          id: dto.siteId,
+        });
+
+        employe.site = site ?? null;
+      }
+
+      delete dto.siteId;
+    }
+
     if (photo?.length) {
       const f = this.fichierRepository.create({
         url: photo[0].path.replace(/\\/g, '/'),

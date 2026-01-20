@@ -3,20 +3,45 @@ type SiteStatus = 'En cours' | 'Terminé';
 
 interface Material {
   id: string;
-  name: string;
-  model: string;
-  supplier: string;
-  price: number;
+  nom: string;
+  modele: string;
+  nomFournisseur: string;
+  prix: number;
+}
+
+export enum UserRole {
+  EMPLOYE = 'Employe',
+  LOGISTIC = 'logistic',
+  FINANCE = 'Finance',
+  ADMIN = 'Admin',
+  BAILLEUR = 'Bailleur',
+  SUPER_ADMIN = 'super_admin',
+}
+
+
+
+interface FilesInterface {
+  id: string;
+  url: string;
+  type: string;
+  originalName: string;
+  siteId: string;
+  description: string;
 }
 
 interface Employee {
   id: string;
-  firstName: string;
-  lastName: string;
-  address: string;
-  phone: string;
-  cinScan?: File | null;
-  certificates?: File[];
+  prenom: string;
+  nom: string;
+  role?: string;
+  salaire: number;
+  avanceCumulee: number;
+  nationalite: string;
+  resteSalaire: number;
+  adresse: string;
+  numeroTelephone: string;
+  scanPhotoCIN: FilesInterface | null;
+  scanCertificats?: FilesInterface[] | [];
 }
 
 interface SiteMaterial {
@@ -45,8 +70,25 @@ interface VehicleInfo {
 interface Site {
   id: string;
   createdAt: Date;
+  typeTravail: SiteType;
+  depenseTotal: number;
+  description: string;
+  coordonneesGPS: string;
+  localisation: string;
+  photos: string[];
+  files: string[];
+  materials: SiteMaterial[];
+  otherExpenses: OtherExpense[];
+  vehicle: VehicleInfo | null;
+  employees: SiteEmployee[];
+  statut: SiteStatus;
+}
+
+interface SiteUpload {
   type: SiteType;
-  gpsLink: string;
+  coordonneesGPS: string;
+  localisation: string;
+  description: string;
   photos: File[];
   files: File[];
   materials: SiteMaterial[];
@@ -56,4 +98,15 @@ interface Site {
   status: SiteStatus;
 }
 
-export type {SiteType, SiteEmployee, SiteStatus, Site, Material, Employee, OtherExpense, VehicleInfo}
+export type {
+  SiteType,
+  SiteUpload,
+  SiteEmployee,
+  FilesInterface,
+  SiteStatus,
+  Site,
+  Material,
+  Employee,
+  OtherExpense,
+  VehicleInfo,
+}

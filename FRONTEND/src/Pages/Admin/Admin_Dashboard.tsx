@@ -1,9 +1,9 @@
-import Navbar from "../../Components/Admin/Dashboard/Navbar";
+import Navbar from "../../Components/Admin/Navbar";
 import { Outlet } from 'react-router-dom';
 
 
 
-const Dashboard = () => {
+const Admin_Dashboard = () => {
     return (
         <div className="bg-[#101728] h-screen w-full flex flex-col overflow-hidden">
             <div className="w-full z-50">
@@ -16,4 +16,4 @@ const Dashboard = () => {
     )
 }
 
-export default Dashboard
+export default Admin_Dashboard

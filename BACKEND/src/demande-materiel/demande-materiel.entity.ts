@@ -24,6 +24,7 @@ export class DemandeMateriel {
 
   @ManyToOne(() => Materiel, (materiel) => materiel.demandes, {
     eager: false,
+    onDelete: 'CASCADE',
     nullable: false,
   })
   materiel: Materiel;

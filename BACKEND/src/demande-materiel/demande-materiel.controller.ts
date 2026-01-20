@@ -8,6 +8,7 @@ import {
   Param,
   Query,
   Req,
+  Delete,
 } from '@nestjs/common';
 import { DemandeMaterielService } from './demande-materiel.service';
 import { CreateDemandeMaterielDto } from './dto/create-demande-materiel.dto';
@@ -16,10 +17,10 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '../user/enums/user-role.enum';
 @Controller('demandes-materiel')
 export class DemandeMaterielController {
-  constructor(private readonly service: DemandeMaterielService) {}
+  constructor(private readonly service: DemandeMaterielService) { }
 
   @Post()
-  @Roles(UserRole.EMPLOYE)
+  // @Roles(UserRole.EMPLOYE)
   create(@Body() dto: CreateDemandeMaterielDto, @Req() req) {
     return this.service.create(dto, req.user);
   }
@@ -49,5 +50,10 @@ export class DemandeMaterielController {
   @Roles(UserRole.LOGISTIC)
   rejeter(@Param('id') id: string) {
     return this.service.rejeter(id);
+  }
+
+  @Delete(':id')
+  delete(@Param(':id') id: string) {
+    return this.service.delete(id);
   }
 }

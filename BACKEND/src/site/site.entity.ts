@@ -44,6 +44,9 @@ export class Site {
   @Column()
   localisation: string;
 
+  @Column('decimal', { precision: 10, scale: 2, default: 0 })
+  depenseTotal: number;
+
   @Column('text')
   coordonneesGPS: string; // Peut stocker latitude,longitude
 

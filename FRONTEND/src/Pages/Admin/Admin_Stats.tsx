@@ -20,7 +20,7 @@ const allSites = [
 ];
 
 
-const Stats = () => {
+const Admin_Stats = () => {
 
     const sortedSites = [...allSites].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
@@ -178,4 +178,4 @@ const Stats = () => {
     );
 };
 
-export default Stats;
+export default Admin_Stats;

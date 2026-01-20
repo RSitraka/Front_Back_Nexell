@@ -5,11 +5,13 @@ import { toast } from "react-toastify";
 interface AuthInterface {
 	user: string | null,
 	role: string | null,
+	roleID: string | null,
 	login: (username: string, password: string, totpCode?: string) => any,
-	register: (username: string, password: string, email: string) => any,
+	register: (formData: any) => any,
 	logout: () => void,
 	setUser: (username: string | null) => void,
 	setRole: (role: string | null) => void,
+	setRoleID: (role: string | null) => void,
 	setLoading: (loading: boolean) => void,
 	loading: boolean,
 	isAuthenticated: boolean,
@@ -27,6 +29,7 @@ const useAuth = () => {
 const AuthProvider = ({ children }: any) => {
 	const [user, setUser] = useState<string | null>(null)
 	const [role, setRole] = useState<string | null>(null)
+	const [roleID, setRoleID] = useState<string | null>(null);
 	const [loading, setLoading] = useState<boolean>(true)
 
 	const login = async (username: string, password: string) => {
@@ -43,6 +46,7 @@ const AuthProvider = ({ children }: any) => {
 			}
 			setUser(data.user.roleId);
 			setRole(data.user.role);
+			setRoleID(data.user.id);
 			return { success: true, requires2FA: false };
 		}
 		catch (err: any) {
@@ -55,19 +59,25 @@ const AuthProvider = ({ children }: any) => {
 			}
 			return { success: false, error: err.message, requires2FA: false };
 		}
-	} 
+	}
 
-	const register = async (username: string, password: string, email: string) => {
+	const register = async (formdata: any) => {
 		try {
-			const response = await api.post('/users/register', {
-				username,
-				password,
-				email
-			});
-			if (!response.data.username || !response.data.email) {
-				return { success: false, error: "Email or username already in use" };
+			const postData = {
+				email: formdata.email,
+				password: formdata.password,
+				nom: formdata.name,
+				prenom: formdata.prenom,
+				adresse: formdata.adresse,
+				numeroTelephone: formdata.numeroTelephone,
+				nationalite: formdata.nationalite,
+				salaire: 0,
 			}
-			return { success: true, data: response.data };
+			const response = await api.post('/employes', postData);
+			return {
+				success: true,
+				data: response.data,
+			};
 		} catch (error: any) {
 			if (error.response?.data?.error) {
 				return { success: false, error: error.response.data.error };
@@ -88,10 +98,12 @@ const AuthProvider = ({ children }: any) => {
 	const value = {
 		user,
 		role,
+		roleID,
 		login,
 		logout,
 		register,
 		setUser,
+		setRoleID,
 		setRole,
 		setLoading,
 		loading,

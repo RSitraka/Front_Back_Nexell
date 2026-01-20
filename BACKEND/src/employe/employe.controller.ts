@@ -20,16 +20,16 @@ import { UpdateEmployeDto } from './dto/update-employe.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UserRole } from '../user/enums/user-role.enum';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { FileFieldsInterceptor, FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
-import { multerOptionsEmployes, multerOptionsFiles } from '../config/multer/config';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { multerOptionsEmployes } from '../config/multer/config';
+import { Public } from '../common/decorators/pulbic.decorator';
 
 @Controller('employes')
 export class EmployeController {
   constructor(private readonly employeService: EmployeService) { }
 
   @Post()
-  @UseGuards(JwtAuthGuard)
-  @Roles(UserRole.EMPLOYE, UserRole.ADMIN)
+  @Public()
   create(@Body() dto: CreateEmployeDto) {
     return this.employeService.create(dto);
   }
@@ -51,15 +51,15 @@ export class EmployeController {
 
   @Patch(':id')
   @UseInterceptors(FileFieldsInterceptor([
-    { name: 'certificats', maxCount: 10 },
+    { name: 'certificats', maxCount: 50 },
     { name: 'photo', maxCount: 1 },
   ], multerOptionsEmployes))
   update(
     @Param('id') id: string,
     @Body() dto: UpdateEmployeDto,
-    @UploadedFiles() files: { certificats?: Express.Multer.File[], photo?: Express.Multer.File[] },
+    @UploadedFiles() files?: { certificats?: Express.Multer.File[], photo?: Express.Multer.File[] },
   ) {
-    return this.employeService.update(id, dto, files.certificats, files.photo);
+    return this.employeService.update(id, dto, files?.certificats, files?.photo);
   }
 
 

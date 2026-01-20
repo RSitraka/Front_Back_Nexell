@@ -1,4 +1,5 @@
 // src/employe/dto/create-employe.dto.ts
+import { Type } from 'class-transformer';
 import {
   IsEmail,
   IsNotEmpty,
@@ -49,9 +50,10 @@ export class CreateEmployeDto {
   @IsOptional()
   scanCertificat?: string[];
 
+  @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   @Min(0)
-  @IsOptional()
   salaire?: number;
 
   @IsNumber()

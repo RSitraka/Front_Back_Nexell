@@ -13,7 +13,7 @@ import { MaterielService } from './materiel.service';
 import { CreateMaterielDto } from './dto/create-materiel.dto';
 import { UpdateMaterielDto } from './dto/update-materiel.dto';
 
-@Controller('materiels') // <-- MINUSCULES (corrigé)
+@Controller('materiels')
 export class MaterielController {
   constructor(private readonly materielService: MaterielService) {}
 

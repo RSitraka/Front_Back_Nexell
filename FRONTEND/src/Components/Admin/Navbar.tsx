@@ -7,8 +7,7 @@ import { FaBuilding } from "react-icons/fa";
 import { FaUsers } from "react-icons/fa6";
 import { useLocation, useNavigate } from "react-router-dom";
 import { FaTools } from "react-icons/fa";
-import { useAuth } from "../../../Providers/AuthProvider";
-
+import { useAuth } from "../../Providers/AuthProvider";
 
 const Navbar = () => {
     const navigate = useNavigate();
@@ -23,7 +22,6 @@ const Navbar = () => {
         const isActive = path === "/" 
             ? location.pathname === "/" 
             : location.pathname.startsWith(path);
-
         return `${baseStyle} ${isActive ? activeStyle : inactiveStyle}`;
     };
     const getIconClass = (path: string) => {
@@ -52,38 +50,38 @@ const Navbar = () => {
                     onClick={() => navigate("/")}
                     className={getItemClass("/")}>
                     <IoHome className={getIconClass("/")} />
-                    <span className="hidden md:block">Accueil</span>
+                    <span className="hidden lg:block">Accueil</span>
                 </div>
                 <div
                     onClick={() => navigate("/sites")}
                     className={getItemClass("/sites")}>
                     <FaBuilding className={getIconClass("/sites")} />
-                    <span className="hidden md:block">Sites</span>
+                    <span className="hidden lg:block">Sites</span>
                 </div>
                 <div
-                    onClick={() => navigate("/employé")}
-                    className={getItemClass("/employé")}>
-                    <FaUsers className={getIconClass("/employé")} />
-                    <span className="hidden md:block">Employés</span>
+                    onClick={() => navigate("/employe")}
+                    className={getItemClass("/employe")}>
+                    <FaUsers className={getIconClass("/employe")} />
+                    <span className="hidden lg:block">Employés</span>
                 </div>
                 <div
-                    onClick={() => navigate("/matériaux")}
-                    className={getItemClass("/matériaux")}>
-                    <FaTools className={getIconClass("/matériaux")} />
-                    <span className="hidden md:block">Matériaux</span>
+                    onClick={() => navigate("/materiaux")}
+                    className={getItemClass("/materiaux")}>
+                    <FaTools className={getIconClass("/materiaux")} />
+                    <span className="hidden lg:block">Matériaux</span>
                 </div>
                 <div
                     onClick={() => navigate("/dashboard")}
                     className={getItemClass("/dashboard")} >
                     <RiDashboardHorizontalFill className={getIconClass("/dashboard")} />
-                    <span className="hidden md:block">Tableau de bord</span>
+                    <span className="hidden lg:block">Tableau de bord</span>
                 </div>
 
                 <div
                     onClick={logout}
                     className={`${baseStyle} ${inactiveStyle}`} >
                     <IoLogOutOutline className="text-[#208060] group-hover:text-white text-lg transition-colors" />
-                    <span className="hidden md:block">Déconnection</span>
+                    <span className="hidden lg:block">Déconnection</span>
                 </div>
             </div>
         </div>

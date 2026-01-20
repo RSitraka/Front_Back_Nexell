@@ -4,7 +4,7 @@ import { Navigate } from "react-router-dom";
 import api from "../Utils/axios";
 
 const ProtectedRoutes = ({ children }: PropsWithChildren) => {
-	const { isAuthenticated, loading, setRole, setUser, setLoading } = useAuth();
+	const { isAuthenticated, loading, setRole, setUser, setLoading, setRoleID } = useAuth();
 
 	const checkAuth = async () => {
 		setLoading(true);
@@ -12,12 +12,13 @@ const ProtectedRoutes = ({ children }: PropsWithChildren) => {
 		  const { data } = await api.get('/auth/me', {
 			withCredentials: true,
 		  });
-	  
 		  setUser(data.roleId);
+		  setRoleID(data.id);
 		  setRole(data.role);
 		} catch {
 		  setUser(null);
 		  setRole(null);
+		  setRoleID(null);
 		} finally {
 		  setLoading(false);
 		}
