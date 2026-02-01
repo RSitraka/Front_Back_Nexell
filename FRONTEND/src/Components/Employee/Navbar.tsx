@@ -51,12 +51,12 @@ const Navbar = () => {
                     <IoHome className={getIconClass("/")} />
                     <span className="hidden lg:block">Accueil</span>
                 </div>
-                <div
+                {/* <div
                     onClick={() => navigate("/sites")}
                     className={getItemClass("/sites")}>
                     <FaBuilding className={getIconClass("/sites")} />
                     <span className="hidden lg:block">Sites</span>
-                </div>
+                </div> */}
                 <div
                     onClick={() => navigate("/employe")}
                     className={getItemClass("/employe")}>
@@ -68,12 +68,6 @@ const Navbar = () => {
                     className={getItemClass("/materiaux")}>
                     <FaTools className={getIconClass("/materiaux")} />
                     <span className="hidden lg:block">Matériaux</span>
-                </div>
-                <div
-                    onClick={() => navigate("/dashboard")}
-                    className={getItemClass("/dashboard")} >
-                    <RiDashboardHorizontalFill className={getIconClass("/dashboard")} />
-                    <span className="hidden lg:block">Tableau de bord</span>
                 </div>
 
                 <div

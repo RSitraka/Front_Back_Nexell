@@ -66,9 +66,13 @@ export class Employe {
   user: User;
 
   // Relation avec Site
-  @ManyToOne(() => Site, (site) => site.employes, { nullable: true })
+  @ManyToOne(() => Site, (site) => site.employes, {
+	nullable: true,
+	onDelete: 'SET NULL',
+  })
   @JoinColumn({ name: 'siteId' })
   site: Site | null;
+  
 
   // Relation inverse avec Depenses
   @OneToMany(() => Depense, (depense) => depense.employe)
