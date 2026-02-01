@@ -81,7 +81,7 @@ const Navbar = () => {
                     onClick={logout}
                     className={`${baseStyle} ${inactiveStyle}`} >
                     <IoLogOutOutline className="text-[#208060] group-hover:text-white text-lg transition-colors" />
-                    <span className="hidden lg:block">Déconnection</span>
+                    <span className="hidden lg:block">Déconnexion</span>
                 </div>
             </div>
         </div>

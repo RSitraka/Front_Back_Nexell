@@ -3,6 +3,8 @@ import {
   BarChart, Bar, LineChart, Line, Legend 
 } from 'recharts';
 import { FaClipboardList, FaCheckCircle, FaClock, FaCoins, FaChartLine } from 'react-icons/fa';
+import { useSites } from '../../Providers/SitesProvider';
+
 
 const monthlyData = [
   { name: 'Sem 1', total: 1200000, materiel: 800000, salaire: 300000 },
@@ -24,9 +26,12 @@ const Admin_Stats = () => {
 
     const sortedSites = [...allSites].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-    const totalSpent = sortedSites.reduce((acc, site) => acc + site.cost, 0);
-    const activeCount = sortedSites.filter(s => s.status === 'En cours').length;
-
+    const {sites} = useSites();
+    
+    const LoadingSites = sites.filter(site => site.statut === 'En cours');
+    const LoadingSitesFinished = sites.filter(site => site.statut === 'Terminé');
+    const totalSpent = LoadingSites.reduce((acc, site) => acc + site.depenseTotal, 0) + LoadingSitesFinished.reduce((acc, site) => acc + site.depenseTotal, 0);
+    
     const cardStyle = "bg-[#1a2332] p-5 rounded-xl shadow-lg border border-gray-800/50";
     const titleStyle = "text-[#6090A0] font-bold mb-4 flex items-center gap-2 text-sm uppercase tracking-wider";
 
@@ -60,7 +65,7 @@ const Admin_Stats = () => {
                     </div>
                     <div className="bg-[#1a2332] border border-[#208060] p-4 rounded-lg shadow-lg min-w-[150px]">
                         <p className="text-xs text-gray-400 mb-1">Sites Actifs</p>
-                        <p className="text-2xl font-bold text-[#409090]">{activeCount}</p>
+                        <p className="text-2xl font-bold text-[#409090]">{LoadingSites.length}</p>
                     </div>
                 </div>
             </div>
