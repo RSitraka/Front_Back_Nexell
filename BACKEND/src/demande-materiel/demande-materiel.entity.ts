@@ -52,10 +52,12 @@ export class DemandeMateriel {
   demandeur: User;
 
   @ManyToOne(() => Site, (site) => site.demandesMateriel, {
-    eager: false,
-    nullable: false,
+	eager: false,
+	nullable: false,
+	onDelete: 'CASCADE',
   })
   site: Site;
+  
 
   @CreateDateColumn()
   createdAt: Date;

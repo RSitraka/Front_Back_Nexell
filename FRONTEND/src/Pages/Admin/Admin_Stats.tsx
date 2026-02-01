@@ -3,29 +3,36 @@ import {
   BarChart, Bar, LineChart, Line, Legend 
 } from 'recharts';
 import { FaClipboardList, FaCheckCircle, FaClock, FaCoins, FaChartLine } from 'react-icons/fa';
+import { useSites } from '../../Providers/SitesProvider';
+
 
 const monthlyData = [
-  { name: 'Sem 1', total: 1200000, materiel: 800000, salaire: 300000 },
-  { name: 'Sem 2', total: 2100000, materiel: 1200000, salaire: 600000 },
-  { name: 'Sem 3', total: 1800000, materiel: 900000, salaire: 700000 },
-  { name: 'Sem 4', total: 2800000, materiel: 1500000, salaire: 900000 },
+	{ name: 'Sem 1', total: 1200000, materiel: 800000, salaire: 300000 },
+	{ name: 'Sem 2', total: 2100000, materiel: 1200000, salaire: 600000 },
+	{ name: 'Sem 3', total: 1800000, materiel: 900000, salaire: 700000 },
+	{ name: 'Sem 4', total: 2800000, materiel: 1500000, salaire: 900000 },
 ];
 
 const allSites = [
-    { id: '1', name: 'Installation Fibre Zone Nord', type: 'Installation', createdAt: '2023-10-01', status: 'Terminé', cost: 4500000 },
+	{ id: '1', name: 'Installation Fibre Zone Nord', type: 'Installation', createdAt: '2023-10-01', status: 'Terminé', cost: 4500000 },
     { id: '2', name: 'Maintenance Pylône 45', type: 'Maintenance', createdAt: '2023-10-15', status: 'En cours', cost: 1200000 },
     { id: '3', name: 'Calibrage Antenne Radio', type: 'Calibrage', createdAt: '2023-10-20', status: 'En cours', cost: 850000 },
     { id: '4', name: 'Raccordement Immeuble B', type: 'Installation', createdAt: '2023-09-10', status: 'Terminé', cost: 3200000 },
-    { id: '5', name: 'Audit Sécurité Site Alpha', type: 'Maintenance', createdAt: '2023-10-25', status: 'En cours', cost: 450000 },
+    { id: '5', name: 'Audit Sécurité Site Alpha', type: 'Maintenance', createdAt: '2023-10-25', status: 'En cours', cost: 40000 },
 ];
 
 
 const Admin_Stats = () => {
-
+	
+	const {sites} = useSites();
     const sortedSites = [...allSites].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-    const totalSpent = sortedSites.reduce((acc, site) => acc + site.cost, 0);
-    const activeCount = sortedSites.filter(s => s.status === 'En cours').length;
+
+    const activeCount = sites.filter(site => site.statut === 'En cours').length;
+    const sitesFinished = sites.filter(site => site.statut === 'Terminé');
+    const loadingFinished = sites.filter(site => site.statut === 'En cours');
+	const totalDepenses = sitesFinished.reduce((acc, site) => acc + (site.depenseTotal ?? 0),0) + loadingFinished.reduce((acc, site) => acc + (site.depenseTotal ?? 0),0);
+
 
     const cardStyle = "bg-[#1a2332] p-5 rounded-xl shadow-lg border border-gray-800/50";
     const titleStyle = "text-[#6090A0] font-bold mb-4 flex items-center gap-2 text-sm uppercase tracking-wider";
@@ -56,7 +63,7 @@ const Admin_Stats = () => {
                 <div className="flex gap-4">
                     <div className="bg-gradient-to-r from-[#208060] to-[#409090] p-4 rounded-lg shadow-lg min-w-[180px]">
                         <p className="text-xs text-green-100 mb-1">Dépenses Totales (Global)</p>
-                        <p className="text-2xl font-bold">{totalSpent.toLocaleString()} Ar</p>
+                        <p className="text-2xl font-bold">{totalDepenses.toLocaleString()} Ar</p>
                     </div>
                     <div className="bg-[#1a2332] border border-[#208060] p-4 rounded-lg shadow-lg min-w-[150px]">
                         <p className="text-xs text-gray-400 mb-1">Sites Actifs</p>

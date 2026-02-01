@@ -570,19 +570,19 @@ const Employe_Sites = () => {
 
                     <div className="fixed bottom-0 left-0 lg:left-0 w-full bg-[#101728] border-t border-[#208060] p-4 shadow-2xl z-40">
                         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 pl-0 lg:pl-64">
-                            <button
-                                disabled={!isFormValid}
-                                onClick={handleSubmit}
-                                className={`
-                                          px-8 py-3 rounded-lg font-bold shadow-lg flex items-center gap-2 transition-all
-                                        ${!isFormValid
-                                        ? 'bg-gray-600 text-gray-400 cursor-not-allowed opacity-50'
-                                        : 'bg-gradient-to-r from-[#A02020] to-red-800 text-white hover:scale-105 cursor-pointer'
-                                    }
-                                 `}
-                            >
-                                <FaSave /> ENREGISTRER LE SITE
-                            </button>
+						<button
+							disabled={!isFormValid}
+							onClick={handleSubmit}
+							className={`
+								px-8 py-3 rounded-lg font-bold shadow-lg flex items-center gap-2 transition-all
+								${!isFormValid
+								? 'bg-gray-600 text-gray-400 cursor-not-allowed opacity-50'
+								: 'bg-gradient-to-r from-[#208060] to-[#409090] text-white hover:scale-105 cursor-pointer'
+								}
+							`}
+							>
+							<FaSave /> ENREGISTRER LE SITE
+							</button>
                         </div>
                     </div>
                 </div>}

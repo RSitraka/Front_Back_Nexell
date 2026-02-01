@@ -294,6 +294,25 @@ const Admin_Sites = () => {
     const btnRed = "bg-[#A02020] hover:bg-red-700 text-white p-2 rounded";
     const gradientBtn = "bg-gradient-to-r from-[#208060] to-[#6090A0] hover:opacity-90 text-white px-4 py-2 rounded shadow transition";
 
+	const handleDeleteSite = async () => {
+		if (!siteId) return;
+	  
+		const confirm = window.confirm(
+		  "⚠️ Cette action est irréversible.\nVoulez-vous vraiment supprimer ce site ?"
+		);
+	  
+		if (!confirm) return;
+	  
+		try {
+		  await api.delete(`/sites/${siteId}`);
+		  navigate('/');
+		} catch (error) {
+		  console.error("Erreur suppression site", error);
+		  alert("Erreur lors de la suppression du site");
+		}
+	  };
+	  
+
     return (
         <>
             {Error ? <div className="flex justify-center items-center h-screen">
@@ -589,6 +608,8 @@ const Admin_Sites = () => {
                     <div className="fixed bottom-0 left-0 lg:left-0 w-full bg-[#101728] border-t border-[#208060] p-4 shadow-2xl z-40">
                         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 pl-0 lg:pl-64">
 
+							
+
                             <div className="flex flex-col">
                                 <span className="text-gray-400 text-sm">TOTAL DÉPENSES DU SITE</span>
                                 <span className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#208060] to-[#409090]">
@@ -596,18 +617,30 @@ const Admin_Sites = () => {
                                 </span>
                             </div>
                             <button
-                                disabled={!isFormValid}
-                                onClick={handleSubmit}
-                                className={`
-                                          px-8 py-3 rounded-lg font-bold shadow-lg flex items-center gap-2 transition-all
-                                        ${!isFormValid
-                                        ? 'bg-gray-600 text-gray-400 cursor-not-allowed opacity-50'
-                                        : 'bg-gradient-to-r from-[#A02020] to-red-800 text-white hover:scale-105 cursor-pointer'
-                                    }
-                                 `}
-                            >
-                                <FaSave /> ENREGISTRER LE SITE
-                            </button>
+								disabled={!isFormValid}
+								onClick={handleSubmit}
+								className={`
+									px-8 py-3 rounded-lg font-bold shadow-lg flex items-center gap-2 transition-all
+									${!isFormValid
+									? 'bg-gray-600 text-gray-400 cursor-not-allowed opacity-50'
+									: 'bg-gradient-to-r from-[#208060] to-[#409090] text-white hover:scale-105 cursor-pointer'
+									}
+								`}
+								>
+								<FaSave /> ENREGISTRER LE SITE
+								</button>
+
+
+							{isEditing && (
+								<button
+								onClick={handleDeleteSite}
+								className="px-6 py-3 rounded-lg font-bold flex items-center gap-2
+											bg-gradient-to-r from-[#A02020] to-red-800
+											text-white hover:scale-105 transition-all shadow-lg"
+								>
+								<FaTrash /> SUPPRIMER LE SITE
+								</button>
+							)}
                         </div>
                     </div>
                 </div>}
