@@ -101,7 +101,7 @@ const Admin_Employes = () => {
             adresse: emp.adresse,
             numeroTelephone: emp.numeroTelephone,
             salaire: emp.salaire,
-            role: role,
+            role: emp.role,
         });
 
         if (emp.scanPhotoCIN && emp.scanPhotoCIN.id) {
@@ -125,7 +125,7 @@ const Admin_Employes = () => {
     };
 
     const resetForm = () => {
-        setFormData({ nom: '', prenom: '', adresse: '', numeroTelephone: '' });
+        setFormData({ nom: '', prenom: '', adresse: '', numeroTelephone: '', role: UserRole.EMPLOYEE });
         setCinFile(null);
         setNewCertificats([]);
         setExistingCertificats([]);

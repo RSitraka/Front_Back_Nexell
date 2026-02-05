@@ -36,6 +36,10 @@ export class CreateEmployeDto {
 
   @IsString()
   @IsNotEmpty()
+  role: string;
+
+  @IsString()
+  @IsNotEmpty()
   numeroTelephone: string;
 
   @IsString()

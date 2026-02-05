@@ -27,10 +27,12 @@ const Admin_Stats = () => {
 	const {sites} = useSites();
     const sortedSites = [...allSites].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
+
     const activeCount = sites.filter(site => site.statut === 'En cours').length;
     const sitesFinished = sites.filter(site => site.statut === 'Terminé');
     const loadingFinished = sites.filter(site => site.statut === 'En cours');
 	const totalDepenses = sitesFinished.reduce((acc, site) => acc + (site.depenseTotal ?? 0),0) + loadingFinished.reduce((acc, site) => acc + (site.depenseTotal ?? 0),0);
+
 
     const cardStyle = "bg-[#1a2332] p-5 rounded-xl shadow-lg border border-gray-800/50";
     const titleStyle = "text-[#6090A0] font-bold mb-4 flex items-center gap-2 text-sm uppercase tracking-wider";
