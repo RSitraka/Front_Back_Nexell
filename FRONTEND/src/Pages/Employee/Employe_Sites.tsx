@@ -39,7 +39,7 @@ const Employe_Sites = () => {
         priceRef: number,
         isNew: boolean,
     }[]>([]);
-    const [otherExpenses, setOtherExpenses] = useState<{ id: string, desc: string, amount: number }[]>([]);
+    const [otherExpenses, setOtherExpenses] = useState<{ id: string, desc: string, amount: number, isNew: boolean }[]>([]);
     const [siteEmployees, setSiteEmployees] = useState<{ id: string, salaire: number, isNew: boolean }[]>([]);
 
     const [vehicle, setVehicle] = useState({
@@ -89,7 +89,16 @@ const Employe_Sites = () => {
             URL.revokeObjectURL(url);
         }
     };
+    const visitGPSLink = () => {
+        if (!coordonneesGPS) return;
 
+        let url = coordonneesGPS;
+        if (!url.startsWith("http://") && !url.startsWith("https://")) {
+            url = "https://" + url;
+        }
+
+        window.open(url, "_blank");
+    };
     const handleDeleteExisting = async (fileId: string, type: 'photos' | 'fichiers') => {
         if (!window.confirm("Supprimer ce fichier définitivement ?")) return;
 
@@ -160,8 +169,16 @@ const Employe_Sites = () => {
                     addEmployee(emp.id, false);
                 })
             }
+            if (data.depenses) {
+                const newExpenses = data.depenses.map((dep: any) => ({
+                    id: dep.id,
+                    desc: dep.description,
+                    amount: dep.montant,
+                    isNew: false
+                }));
+                setOtherExpenses(newExpenses);
+            }
             setSiteEmployees(data.employes);
-            setOtherExpenses(data.depenses);
         }
         catch (e) { setError(true); }
     }
@@ -209,12 +226,22 @@ const Employe_Sites = () => {
         }
     };
     const deleteMaterials = async (idx: number) => {
-        if (!selectedMaterials[idx].isNew && window.confirm("Voulez-vous supprimer cette demande ?")) {
+        if (!window.confirm("Voulez-vous supprimer cette demande ?")) return;
+        if (!selectedMaterials[idx].isNew) {
             await api.delete(`/demandes-materiel/${selectedMaterials[idx].id}`)
         }
         const start = [...selectedMaterials];
         start.splice(idx, 1);
         setSelectedMaterials(start);
+    }
+    const deleteExpenses = async (idx: number) => {
+        if (!window.confirm("Voulez-vous supprimer ce dépense ?")) return;
+        if (!otherExpenses[idx].isNew) {
+            await api.delete(`/depenses/${otherExpenses[idx].id}`)
+        }
+        const updated = [...otherExpenses];
+        updated.splice(idx, 1);
+        setOtherExpenses(updated);
     }
 
 
@@ -233,7 +260,7 @@ const Employe_Sites = () => {
 
     const removeEmploye = async (idx: number) => {
         if (!siteEmployees[idx].isNew && window.confirm("Voulez-vous enlever cet employé")) {
-            await api.patch(`/employes/${siteEmployees[idx].id}`, {siteId: null});
+            await api.patch(`/employes/${siteEmployees[idx].id}`, { siteId: null });
         }
         const start = [...siteEmployees];
         start.splice(idx, 1);
@@ -246,7 +273,7 @@ const Employe_Sites = () => {
     };
 
     const addExpense = () => {
-        setOtherExpenses([...otherExpenses, { id: Date.now().toString(), desc: '', amount: 0 }]);
+        setOtherExpenses([...otherExpenses, { id: Date.now().toString(), desc: '', amount: 0, isNew: true }]);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -326,8 +353,28 @@ const Employe_Sites = () => {
                                 <input required type="text" className={inputStyle} placeholder="Antananarivo, Analakely" value={localisation} onChange={e => setLocalisation(e.target.value)} />
                             </div>
                             <div className="md:col-span-2">
-                                <label className="block text-gray-400 text-sm mb-1">Localisation GPS (Lien)</label>
-                                <input required type="text" className={inputStyle} placeholder="https://maps.google.com/..." value={coordonneesGPS} onChange={e => setcoordonneesGPS(e.target.value)} />
+                                <label className="block text-gray-400 text-sm mb-1">
+                                    Localisation GPS (Lien)
+                                </label>
+
+                                <div className="flex gap-2">
+                                    <input
+                                        required
+                                        type="text"
+                                        className={inputStyle}
+                                        placeholder="https://maps.google.com/..."
+                                        value={coordonneesGPS}
+                                        onChange={e => setcoordonneesGPS(e.target.value)}
+                                    />
+
+                                    <button
+                                        type="button"
+                                        onClick={visitGPSLink}
+                                        className={gradientBtn}
+                                    >
+                                        Visiter
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -406,7 +453,8 @@ const Employe_Sites = () => {
                                     onChange={(e) => {
                                         const updated = [...otherExpenses];
                                         updated[idx].desc = e.target.value;
-                                        setOtherExpenses(updated);
+                                        if (updated[idx].isNew)
+                                            setOtherExpenses(updated);
                                     }}
                                 />
                                 <input
@@ -417,15 +465,11 @@ const Employe_Sites = () => {
                                     onChange={(e) => {
                                         const updated = [...otherExpenses];
                                         updated[idx].amount = Number(e.target.value);
-                                        setOtherExpenses(updated);
+                                        if (updated[idx].isNew)
+                                            setOtherExpenses(updated);
                                     }}
                                 />
                                 <span className="text-gray-400 text-sm">Ar</span>
-                                <button onClick={() => {
-                                    const updated = [...otherExpenses];
-                                    updated.splice(idx, 1);
-                                    setOtherExpenses(updated);
-                                }} className={btnRed}><FaTrash /></button>
                             </div>
                         ))}
                         <button onClick={addExpense} className="text-sm text-[#409090] hover:underline flex items-center gap-1 mt-2">
@@ -433,7 +477,7 @@ const Employe_Sites = () => {
                         </button>
                     </div>
 
-                    <div className={cardStyle}>
+                    {/* <div className={cardStyle}>
                         <div className="flex justify-between items-center mb-4 border-b border-gray-700 pb-2">
                             <h2 className="text-[#6090A0] text-lg font-bold flex items-center gap-2"><FaCar /> Véhicule</h2>
                             <label className="flex items-center gap-2 cursor-pointer">
@@ -453,7 +497,7 @@ const Employe_Sites = () => {
                                 </div>
                             </div>
                         )}
-                    </div>
+                    </div> */}
                     <div className={cardStyle}>
                         <h2 className={sectionTitle}><FaUsers /> Employés</h2>
                         <div className="flex gap-2 mb-4">
@@ -570,19 +614,19 @@ const Employe_Sites = () => {
 
                     <div className="fixed bottom-0 left-0 lg:left-0 w-full bg-[#101728] border-t border-[#208060] p-4 shadow-2xl z-40">
                         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 pl-0 lg:pl-64">
-						<button
-							disabled={!isFormValid}
-							onClick={handleSubmit}
-							className={`
+                            <button
+                                disabled={!isFormValid}
+                                onClick={handleSubmit}
+                                className={`
 								px-8 py-3 rounded-lg font-bold shadow-lg flex items-center gap-2 transition-all
 								${!isFormValid
-								? 'bg-gray-600 text-gray-400 cursor-not-allowed opacity-50'
-								: 'bg-gradient-to-r from-[#208060] to-[#409090] text-white hover:scale-105 cursor-pointer'
-								}
+                                        ? 'bg-gray-600 text-gray-400 cursor-not-allowed opacity-50'
+                                        : 'bg-gradient-to-r from-[#208060] to-[#409090] text-white hover:scale-105 cursor-pointer'
+                                    }
 							`}
-							>
-							<FaSave /> ENREGISTRER LE SITE
-							</button>
+                            >
+                                <FaSave /> ENREGISTRER LE SITE
+                            </button>
                         </div>
                     </div>
                 </div>}

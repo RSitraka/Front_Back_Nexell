@@ -142,7 +142,6 @@ export class EmployeService {
 
       delete dto.siteId;
     }
-    console.log(dto);
     if (photo?.length) {
       const f = this.fichierRepository.create({
         url: photo[0].path.replace(/\\/g, '/'),

@@ -64,8 +64,6 @@ export class DemandeBudgetService {
 
     demande.statut = dto.statut;
     demande.valideur = { id: valideurId } as User;
-    console.log('Statut de la demande:', dto.statut);
-    console.log('ID du valideur:', valideurId);
 
     const updated = await this.demandeRepo.save(demande);
 

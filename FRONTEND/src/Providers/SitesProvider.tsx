@@ -76,9 +76,32 @@ const UpdateMaterials = async (data: any[], siteId: string) => {
     );
 }
 
+const UpdataExpenses = async (data: any[], user: string, siteId: string) => {
+    await Promise.all(
+        data.map(exp => {
+            if (exp.desc === '' || exp.amount === 0)   
+                return ;
+            if (exp.isNew)
+                return (api.post(`/depenses/`, {
+                    type: 'Autre',
+                    montant: (exp.amount),
+                    siteId: siteId,
+                    demandeurId: user,
+                    description: exp.desc,
+
+                }));
+            return (api.patch(`/depenses/${exp.id}`, {
+                montant: (exp.amount),
+                description: exp.desc,
+                siteId: siteId,
+            }))
+        })
+    );
+}
+
 export const SitesProvider = ({ children }: { children: React.ReactNode }) => {
     const [sites, setSites] = useState<Site[]>([]);
-    const { user } = useAuth();
+    const { user, roleID } = useAuth();
 
     const getSites = async () => {
         try {
@@ -92,10 +115,11 @@ export const SitesProvider = ({ children }: { children: React.ReactNode }) => {
     const addSite = async (data: any) => {
         try {
             const response = await api.post('/sites', SiteInfo(data));
-            if (response.data.id) {
+            if (response.data.id && roleID) {
                 addFiles(data.files, response.data.id, 'fichiers');
                 addFiles(data.photos, response.data.id, 'photos');
                 updateEmployes(data.data.siteEmployees, response.data.id);
+                UpdataExpenses(data.data.otherExpenses, roleID, response.data.id);
                 UpdateMaterials(data.data.selectedMaterials, response.data.id);
             }
             getSites();
@@ -108,10 +132,12 @@ export const SitesProvider = ({ children }: { children: React.ReactNode }) => {
     const updateSite = async (id: string, data: any) => {
         try {
             await api.patch(`/sites/${id}`, SiteInfo(data));
+            if (!roleID) return;
             addFiles(data.photos, id, 'photos');
             addFiles(data.files, id, 'fichiers');
             updateEmployes(data.data.siteEmployees, id);
             UpdateMaterials(data.data.selectedMaterials, id);
+            UpdataExpenses(data.data.otherExpenses, roleID, id);
             getSites();
         } catch (error) {
             console.error("Erreur lors de la mise à jour du site:", error);

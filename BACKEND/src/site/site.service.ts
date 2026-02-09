@@ -30,7 +30,9 @@ export class SiteService {
         employes: true,
         materiels: true,
         vehicules: true,
-        depenses: true,
+        depenses: {
+          demandeur: true,
+        },
         photos: true,
         fichiers: true,
         demandesMateriel: {

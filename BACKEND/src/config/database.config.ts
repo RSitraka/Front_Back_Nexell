@@ -6,7 +6,6 @@ export const databaseConfig = (
 ): TypeOrmModuleOptions => {
   const password = configService.get<string>('DB_PASSWORD');
 
-  console.log('DB_PASSWORD:', password, '| Type:', typeof password); // DEBUG
 
   return {
     type: 'sqlite',

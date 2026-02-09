@@ -4,11 +4,13 @@ import { toast } from "react-toastify";
 
 interface AuthInterface {
 	user: string | null,
+	nom: string | null,
 	role: string | null,
 	roleID: string | null,
 	login: (username: string, password: string, totpCode?: string) => any,
 	register: (formData: any) => any,
 	logout: () => void,
+	setNom: (nom: string | null) => void,
 	setUser: (username: string | null) => void,
 	setRole: (role: string | null) => void,
 	setRoleID: (role: string | null) => void,
@@ -28,6 +30,7 @@ const useAuth = () => {
 
 const AuthProvider = ({ children }: any) => {
 	const [user, setUser] = useState<string | null>(null)
+	const [nom, setNom] = useState<string | null>(null)
 	const [role, setRole] = useState<string | null>(null)
 	const [roleID, setRoleID] = useState<string | null>(null);
 	const [loading, setLoading] = useState<boolean>(true)
@@ -46,6 +49,7 @@ const AuthProvider = ({ children }: any) => {
 			}
 			setUser(data.user.roleId);
 			setRole(data.user.role);
+			setNom(data.user.nom);
 			setRoleID(data.user.id);
 			return { success: true, requires2FA: false };
 		}
@@ -73,7 +77,6 @@ const AuthProvider = ({ children }: any) => {
 				nationalite: formdata.nationalite,
 				salaire: 0,
 			}
-			console.log(postData);
 			const response = await api.post('/employes', postData);
 			return {
 				success: true,
@@ -99,10 +102,12 @@ const AuthProvider = ({ children }: any) => {
 	const value = {
 		user,
 		role,
+		nom,
 		roleID,
 		login,
 		logout,
 		register,
+		setNom,
 		setUser,
 		setRoleID,
 		setRole,

@@ -19,7 +19,6 @@ export class SeedAdminService {
       where: { email: adminEmail },
     });
     if (existing) {
-      console.log('Admin déjà créé');
       return;
     }
 
@@ -35,6 +34,5 @@ export class SeedAdminService {
     });
 
     await this.userRepo.save(admin);
-    console.log('Premier ADMIN créé :', adminEmail);
   }
 }

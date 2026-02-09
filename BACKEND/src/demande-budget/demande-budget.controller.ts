@@ -42,9 +42,6 @@ export class DemandeBudgetController {
     @Body() dto: UpdateDemandeBudgetDto,
     @Request() req,
   ) {
-    console.log('DTO reçu:', dto);
-    console.log('Statut reçu:', dto.statut);
-    console.log('Type de statut:', typeof dto.statut);
     const valideurId = req.user.id;
     return this.demandeBudgetService.valider(id, dto, valideurId);
   }

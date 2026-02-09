@@ -8,10 +8,11 @@ import {
   Param,
   Delete,
   Query,
+  Patch,
 } from '@nestjs/common';
 import { DepenseService } from './depense.service';
 import { CreateDepenseDto } from './dto/create-depense.dto';
-//import { UpdateDepenseDto } from './dto/update-depense.dto';
+import { UpdateDepenseDto } from './dto/update-depense.dto';
 
 @Controller('depenses')
 export class DepenseController {
@@ -21,6 +22,7 @@ export class DepenseController {
   create(@Body() createDepenseDto: CreateDepenseDto) {
     return this.depenseService.create(createDepenseDto);
   }
+
 
   @Get()
   findAll(@Query('siteId') siteId?: string) {
@@ -40,13 +42,13 @@ export class DepenseController {
     return this.depenseService.getMateriel(id);
   }
 
-  /*@Patch(':id')
+  @Patch(':id')
   update(
     @Param('id') id: string,
     @Body() updateDepenseDto: UpdateDepenseDto,
   ) {
-    return this.depenseService.update(id, updateDepenseDto);
-  }*/
+    return this.depenseService.update(updateDepenseDto, id);
+  }
 
   @Delete(':id')
   remove(@Param('id') id: string) {

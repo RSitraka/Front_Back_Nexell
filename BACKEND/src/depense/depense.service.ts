@@ -10,6 +10,7 @@ import { Materiel } from '../materiel/materiel.entity';
 import { Employe } from '../employe/employe.entity';
 import { User } from '../user/user.entity';
 import { Vehicule } from '../vehicule/vehicule.entity';
+import { UpdateDepenseDto } from './dto/update-depense.dto';
 
 @Injectable()
 export class DepenseService {
@@ -86,6 +87,11 @@ export class DepenseService {
     }
 
     // ---- ENREGISTREMENT ----
+    return await this.depenseRepository.save(depense);
+  }
+  async update(dto: UpdateDepenseDto, id: string): Promise<Depense>{
+    const depense = await this.findOne(id);
+    Object.assign(depense, dto);
     return await this.depenseRepository.save(depense);
   }
 
