@@ -277,6 +277,19 @@ const Admin_Sites = () => {
             navigate('/');
         }
     };
+
+	const visitGPSLink = () => {
+		if (!coordonneesGPS) return;
+
+		let url = coordonneesGPS;
+		if (!url.startsWith("http://") && !url.startsWith("https://")) {
+			url = "https://" + url;
+		}
+
+		window.open(url, "_blank");
+	};
+
+
     // const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     //     if (e.target.files) setPhotos([...photos, ...Array.from(e.target.files)]);
     // };
@@ -293,25 +306,6 @@ const Admin_Sites = () => {
     const cardStyle = "bg-[#1a2332] p-6 rounded-xl shadow-md mb-6";
     const btnRed = "bg-[#A02020] hover:bg-red-700 text-white p-2 rounded";
     const gradientBtn = "bg-gradient-to-r from-[#208060] to-[#6090A0] hover:opacity-90 text-white px-4 py-2 rounded shadow transition";
-
-	const handleDeleteSite = async () => {
-		if (!siteId) return;
-	  
-		const confirm = window.confirm(
-		  "⚠️ Cette action est irréversible.\nVoulez-vous vraiment supprimer ce site ?"
-		);
-	  
-		if (!confirm) return;
-	  
-		try {
-		  await api.delete(`/sites/${siteId}`);
-		  navigate('/');
-		} catch (error) {
-		  console.error("Erreur suppression site", error);
-		  alert("Erreur lors de la suppression du site");
-		}
-	  };
-	  
 
     return (
         <>
@@ -349,10 +343,31 @@ const Admin_Sites = () => {
                                 <label className="block text-gray-400 text-sm mb-1">Localisation</label>
                                 <input required type="text" className={inputStyle} placeholder="Antananarivo, Analakely" value={localisation} onChange={e => setLocalisation(e.target.value)} />
                             </div>
-                            <div className="md:col-span-2">
-                                <label className="block text-gray-400 text-sm mb-1">Localisation GPS (Lien)</label>
-                                <input required type="text" className={inputStyle} placeholder="https://maps.google.com/..." value={coordonneesGPS} onChange={e => setcoordonneesGPS(e.target.value)} />
-                            </div>
+                           <div className="md:col-span-2">
+								<label className="block text-gray-400 text-sm mb-1">
+									Localisation GPS (Lien)
+								</label>
+
+								<div className="flex gap-2">
+									<input
+										required
+										type="text"
+										className={inputStyle}
+										placeholder="https://maps.google.com/..."
+										value={coordonneesGPS}
+										onChange={e => setcoordonneesGPS(e.target.value)}
+									/>
+
+									<button
+										type="button"
+										onClick={visitGPSLink}
+                                		className={gradientBtn}
+									>
+										Visiter
+									</button>
+								</div>
+							</div>
+
                         </div>
                     </div>
 
@@ -629,18 +644,6 @@ const Admin_Sites = () => {
 								>
 								<FaSave /> ENREGISTRER LE SITE
 								</button>
-
-
-							{isEditing && (
-								<button
-								onClick={handleDeleteSite}
-								className="px-6 py-3 rounded-lg font-bold flex items-center gap-2
-											bg-gradient-to-r from-[#A02020] to-red-800
-											text-white hover:scale-105 transition-all shadow-lg"
-								>
-								<FaTrash /> SUPPRIMER LE SITE
-								</button>
-							)}
                         </div>
                     </div>
                 </div>}
