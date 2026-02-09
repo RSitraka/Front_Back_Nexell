@@ -25,7 +25,7 @@ const allSites = [
 const Admin_Stats = () => {
 	
 	const {sites} = useSites();
-    const sortedSites = [...allSites].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    const sortedSites = [...sites].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
 
     const activeCount = sites.filter(site => site.statut === 'En cours').length;
@@ -149,22 +149,22 @@ const Admin_Stats = () => {
                             </tr>
                         </thead>
                         <tbody className="text-sm text-gray-300 divide-y divide-gray-700">
-                            {sortedSites.map((site) => (
-                                <tr key={site.id} className="hover:bg-[#1f2a3d] transition-colors">
-                                    <td className="p-4 font-medium text-white">{site.name}</td>
+                            {sortedSites.map((sites) => (
+                                <tr key={sites.id} className="hover:bg-[#1f2a3d] transition-colors">
+                                    <td className="p-4 font-medium text-white">{sites.description}</td>
                                     <td className="p-4">
                                         <span className="px-2 py-1 bg-gray-700/50 rounded text-xs border border-gray-600">
-                                            {site.type}
+                                            {sites.typeTravail}
                                         </span>
                                     </td>
                                     <td className="p-4 font-mono text-gray-400">
-                                        {new Date(site.createdAt).toLocaleDateString('fr-FR')}
+                                        {new Date(sites.createdAt).toLocaleDateString('fr-FR')}
                                     </td>
                                     <td className="p-4 font-bold text-[#409090]">
-                                        {site.cost.toLocaleString()} Ar
+                                        {sites.depenseTotal.toLocaleString()} Ar
                                     </td>
                                     <td className="p-4 text-center">
-                                        {site.status === 'En cours' ? (
+                                        {sites.statut === 'En cours' ? (
                                             <span className="inline-flex items-center gap-1 bg-[#208060]/20 text-[#208060] px-3 py-1 rounded-full text-xs font-bold border border-[#208060]/30">
                                                 <FaClock /> En cours
                                             </span>
