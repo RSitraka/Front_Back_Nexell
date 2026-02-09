@@ -2,6 +2,7 @@ import { useContext, createContext, useState, useEffect } from "react";
 import type { Employee } from "../Utils/interface";
 import api from "../Utils/axios";
 import { useAuth } from "./AuthProvider";
+import { data } from "react-router-dom";
 
 interface EmployeeFormData {
 	data: Partial<Employee>;
@@ -32,7 +33,7 @@ export const useEmployes = () => {
 export const EmployeeProviders = ({ children }: { children: React.ReactNode }) => {
 	const [Employes, setEmployes] = useState<Employee[]>([]);
 	const [AllEmployes, setAllEmployes] = useState<Employee[]>([]);
-	const { user, role, roleID, setRole } = useAuth();
+	const { user, role, setRole } = useAuth();
 
 	const getEmployee = async () => {
 		try {
@@ -58,7 +59,7 @@ export const EmployeeProviders = ({ children }: { children: React.ReactNode }) =
 		const formData = new FormData();
 		Object.keys(empData.data).forEach(key => {
 			const value = empData.data[key as keyof Employee];
-			if (value !== undefined && value !== null && key !== 'scanPhotoCIN' && key !== 'scanCertificats' && key !== 'role') {
+			if (value !== undefined && value !== null && key !== 'scanPhotoCIN' && key !== 'scanCertificats' && key !== 'role' && key !== 'userId') {
 				formData.append(key, String(value));
 			}
 		});
@@ -80,8 +81,8 @@ export const EmployeeProviders = ({ children }: { children: React.ReactNode }) =
 			await api.patch(`/employes/${id}`, formData, {
 				headers: { 'Content-Type': 'multipart/form-data' }
 			});
-			if (roleID && empData.data.role) {
-				await api.patch(`/users/${roleID}`, {
+			if (empData.data.userId && empData.data.role) {
+				await api.patch(`/users/${empData.data.userId}`, {
 					role: empData.data.role,
 				});
 				setRole(empData.data.role);

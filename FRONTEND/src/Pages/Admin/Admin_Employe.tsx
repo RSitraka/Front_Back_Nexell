@@ -90,7 +90,7 @@ const Admin_Employes = () => {
         }
     };
 
-    const handleEdit = async (emp: Employee) => {
+    const handleEdit = async (emp: any) => {
         resetForm();
         setEditingId(emp.id);
 
@@ -101,7 +101,8 @@ const Admin_Employes = () => {
             adresse: emp.adresse,
             numeroTelephone: emp.numeroTelephone,
             salaire: emp.salaire,
-            role: emp.role,
+            role: emp.user.role,
+            userId: emp.user.id,
         });
 
         if (emp.scanPhotoCIN && emp.scanPhotoCIN.id) {
@@ -125,7 +126,7 @@ const Admin_Employes = () => {
     };
 
     const resetForm = () => {
-        setFormData({ nom: '', prenom: '', adresse: '', numeroTelephone: '', role: UserRole.EMPLOYEE });
+        setFormData({ nom: '', prenom: '', adresse: '', numeroTelephone: '', role: UserRole.EMPLOYE });
         setCinFile(null);
         setNewCertificats([]);
         setExistingCertificats([]);

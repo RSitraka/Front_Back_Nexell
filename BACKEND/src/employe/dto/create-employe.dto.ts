@@ -35,8 +35,8 @@ export class CreateEmployeDto {
   adresse: string;
 
   @IsString()
-  @IsNotEmpty()
-  role: string;
+  @IsOptional()
+  role?: string;
 
   @IsString()
   @IsNotEmpty()

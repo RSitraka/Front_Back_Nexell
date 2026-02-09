@@ -73,6 +73,7 @@ const AuthProvider = ({ children }: any) => {
 				nationalite: formdata.nationalite,
 				salaire: 0,
 			}
+			console.log(postData);
 			const response = await api.post('/employes', postData);
 			return {
 				success: true,

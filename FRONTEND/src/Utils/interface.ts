@@ -31,6 +31,7 @@ interface FilesInterface {
 
 interface Employee {
   id: string;
+  userId: string;
   prenom: string;
   nom: string;
   role?: string;
