@@ -72,10 +72,45 @@ const Admin_Stats = () => {
 		}));
 	};
 	
+    const buildSalaryMonthlyData = (sites: any[]) => {
+    const weeks: Record<string, number> = {
+        "Sem 1": 0,
+        "Sem 2": 0,
+        "Sem 3": 0,
+        "Sem 4": 0,
+    };
+
+    sites.forEach((site) => {
+        const day = new Date(site.createdAt).getDate();
+
+        let week = "Sem 4";
+        if (day <= 7) week = "Sem 1";
+        else if (day <= 14) week = "Sem 2";
+        else if (day <= 21) week = "Sem 3";
+
+        // ✅ Backend = site.employes
+        const totalSalaireSite =
+        site.employes?.reduce((acc: number, emp: any) => {
+            // parfois salaire sort en string (decimal) → on force Number
+            return acc + Number(emp.salaire ?? 0);
+        }, 0) ?? 0;
+
+        weeks[week] += totalSalaireSite;
+    });
+
+    return Object.keys(weeks).map((w) => ({
+        name: w,
+        salaire: weeks[w],
+    }));
+    };
+
+
+
     const cardStyle = "bg-[#1a2332] p-5 rounded-xl shadow-lg border border-gray-800/50";
     const titleStyle = "text-[#6090A0] font-bold mb-4 flex items-center gap-2 text-sm uppercase tracking-wider";
 	
 	const chartData = buildMonthlyData(sites);
+    const salaireData = buildSalaryMonthlyData(sites);
 
     const CustomTooltip = ({ active, payload, label }: any) => {
         if (active && payload && payload.length) {
@@ -166,7 +201,7 @@ const Admin_Stats = () => {
                     <h2 className={titleStyle}><FaCoins /> Coût Salarial</h2>
                     <div className="h-[250px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={monthlyData}>
+                            <LineChart data={salaireData}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#2d3748" vertical={false} />
                                 <XAxis dataKey="name" stroke="#9ca3af" tick={{fontSize: 10}} />
                                 <YAxis stroke="#9ca3af" tick={{fontSize: 10}} tickFormatter={(value) => `${value/1000}k`} />
