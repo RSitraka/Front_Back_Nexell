@@ -28,6 +28,23 @@ const Admin_Stats = () => {
 		statut: string;
 	}
 	
+    
+    const sortedSites = [...sites].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+	
+	
+    const activeCount = sites.filter(site => site.statut === 'En cours').length;
+    const sitesFinished = sites.filter(site => site.statut === 'Terminé');
+    const loadingFinished = sites.filter(site => site.statut === 'En cours');
+	const totalDepenses = sitesFinished.reduce((acc, site) => acc + (site.depenseTotal ?? 0),0) + loadingFinished.reduce((acc, site) => acc + (site.depenseTotal ?? 0),0);
+	
+    const siteCalibrage = sites.filter(site => site.typeTravail === "Calibrage");
+    const siteInstallation = sites.filter(site => site.typeTravail === "Installation");
+    const siteMaintenance = sites.filter(site => site.typeTravail === "Maintenance");
+    
+    const depsiteCalibrage = siteCalibrage.reduce((acc, site) => acc + (site.depenseTotal ?? 0),0);
+    const depsiteInstallation = siteInstallation.reduce((acc, site) => acc + (site.depenseTotal ?? 0),0);
+    const depsiteMaintenance = siteMaintenance.reduce((acc, site) => acc + (site.depenseTotal ?? 0),0);
+    
 	const buildMonthlyData = (sites: Site[]) => {
 		const weeks: Record<string, number> = {
 			"Sem 1": 0,
@@ -54,15 +71,6 @@ const Admin_Stats = () => {
 			salaire: weeks[w] * 0.4
 		}));
 	};
-
-    const sortedSites = [...sites].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-	
-	
-    const activeCount = sites.filter(site => site.statut === 'En cours').length;
-    const sitesFinished = sites.filter(site => site.statut === 'Terminé');
-    const loadingFinished = sites.filter(site => site.statut === 'En cours');
-	const totalDepenses = sitesFinished.reduce((acc, site) => acc + (site.depenseTotal ?? 0),0) + loadingFinished.reduce((acc, site) => acc + (site.depenseTotal ?? 0),0);
-	
 	
     const cardStyle = "bg-[#1a2332] p-5 rounded-xl shadow-lg border border-gray-800/50";
     const titleStyle = "text-[#6090A0] font-bold mb-4 flex items-center gap-2 text-sm uppercase tracking-wider";
@@ -128,19 +136,31 @@ const Admin_Stats = () => {
                 </div>
 
                 <div className={cardStyle}>
-                    <h2 className={titleStyle}><FaCoins /> Coût Matériaux</h2>
-                    <div className="h-[250px] w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={chartData}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#2d3748" vertical={false} />
-                                <XAxis dataKey="name" stroke="#9ca3af" tick={{fontSize: 10}} />
-                                <YAxis stroke="#9ca3af" tick={{fontSize: 10}} tickFormatter={(value) => `${value/1000}k`} />
-                                <Tooltip content={<CustomTooltip />} />
-                                <Bar dataKey="materiel" name="Matériels" fill="#6090A0" radius={[4, 4, 0, 0]} />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </div>
+                <h2 className={titleStyle}><FaCoins /> Dépenses par Type de Travail</h2>
+
+                <div className="h-[250px] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                        data={[
+                        { name: "Calibrage", depense: depsiteCalibrage },
+                        { name: "Installation", depense: depsiteInstallation },
+                        { name: "Maintenance", depense: depsiteMaintenance },
+                        ]}
+                    >
+                        <CartesianGrid strokeDasharray="3 3" stroke="#2d3748" vertical={false} />
+                        <XAxis dataKey="name" stroke="#9ca3af" tick={{ fontSize: 10 }} />
+                        <YAxis
+                        stroke="#9ca3af"
+                        tick={{ fontSize: 10 }}
+                        tickFormatter={(value) => `${Number(value).toLocaleString('fr-FR')} Ar`}
+                        />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Bar dataKey="depense" name="Dépenses totales" fill="#6090A0" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                    </ResponsiveContainer>
                 </div>
+                </div>
+
 
                 <div className={`${cardStyle} lg:col-span-1 xl:col-span-2`}>
                     <h2 className={titleStyle}><FaCoins /> Coût Salarial</h2>
