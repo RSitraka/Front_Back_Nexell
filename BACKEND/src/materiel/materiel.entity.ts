@@ -28,7 +28,7 @@ export class Materiel {
   @Column()
   modele: string;
 
-  @ManyToOne(() => Site, (site) => site.materiels, { nullable: true })
+  @ManyToOne(() => Site, (site) => site.materiels, { nullable: true, onDelete: 'SET NULL' })
   site: Site;
 
   @OneToMany(() => DemandeMateriel, (demande) => demande.materiel)

@@ -47,7 +47,7 @@ export class DemandeAchat {
   @ManyToOne(() => User, (user) => user.demandesAchat)
   demandeur: User;
 
-  @ManyToOne(() => Site, (site) => site.demandesAchat)
+  @ManyToOne(() => Site, (site) => site.demandesAchat, { nullable: true, onDelete: 'CASCADE' })
   site: Site;
 
   @CreateDateColumn()

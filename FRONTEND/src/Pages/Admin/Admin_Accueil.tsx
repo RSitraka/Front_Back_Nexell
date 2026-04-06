@@ -1,10 +1,15 @@
 import { useNavigate } from 'react-router-dom';
-import { FaMapMarkerAlt, FaMoneyBillWave, FaClock } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaMoneyBillWave, FaClock, FaTrash } from 'react-icons/fa';
 import { useSites } from '../../Providers/SitesProvider';
 
 const Admin_Accueil = () => {
     const navigate = useNavigate();
-    const {sites} = useSites();
+    const { sites, deleteSite } = useSites();
+
+    const handleDelete = async (id: string) => {
+        if (!window.confirm("Voulez-vous vraiment supprimer ce site ? Cette action est irréversible.")) return;
+        await deleteSite(id);
+    };
 
     const gradientBrand = "bg-gradient-to-r from-[#208060] via-[#409090] to-[#6090A0]";
     const textRed = "text-[#A02020]";
@@ -53,7 +58,10 @@ const Admin_Accueil = () => {
                                 {new Intl.NumberFormat('fr-MG', { style: 'currency', currency: 'MGA' }).format(site.depenseTotal)}
                             </div>
                         </div>
-						<div className='flex justify-end underline hover:cursor-pointer' onClick={() => navigate(`/sites?id=${site.id}`)}>voir plus</div>
+						<div className='flex justify-end items-center gap-3 mt-2'>
+							<button onClick={() => handleDelete(site.id)} className="text-[#A02020] hover:text-red-400 p-1" title="Supprimer le site"><FaTrash /></button>
+							<span className='underline hover:cursor-pointer' onClick={() => navigate(`/sites?id=${site.id}`)}>voir plus</span>
+						</div>
                     </div>
                 ))}
 				{LoadingSitesFinished.map((site) => (
@@ -79,7 +87,10 @@ const Admin_Accueil = () => {
                                 {new Intl.NumberFormat('fr-MG', { style: 'currency', currency: 'MGA' }).format(site.depenseTotal)}
                             </div>
                         </div>
-						<div className='flex justify-end underline hover:cursor-pointer' onClick={() => navigate(`/sites?id=${site.id}`)}>voir plus</div>
+						<div className='flex justify-end items-center gap-3 mt-2'>
+							<button onClick={() => handleDelete(site.id)} className="text-[#A02020] hover:text-red-400 p-1" title="Supprimer le site"><FaTrash /></button>
+							<span className='underline hover:cursor-pointer' onClick={() => navigate(`/sites?id=${site.id}`)}>voir plus</span>
+						</div>
                     </div>
                 ))}
             </div>

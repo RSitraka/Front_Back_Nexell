@@ -88,12 +88,13 @@ const Admin_Stats = () => {
         else if (day <= 14) week = "Sem 2";
         else if (day <= 21) week = "Sem 3";
 
-        // ✅ Backend = site.employes
+        // Utiliser les dépenses de type SALAIRE pour avoir le total réel,
+        // même quand les employés sont réaffectés à un autre site.
         const totalSalaireSite =
-        site.employes?.reduce((acc: number, emp: any) => {
-            // parfois salaire sort en string (decimal) → on force Number
-            return acc + Number(emp.salaire ?? 0);
-        }, 0) ?? 0;
+            site.depenses
+                ?.filter((dep: any) => dep.type === 'Salaire employé (avec avance)')
+                .reduce((acc: number, dep: any) => acc + Number(dep.montant ?? 0), 0)
+            ?? 0;
 
         weeks[week] += totalSalaireSite;
     });

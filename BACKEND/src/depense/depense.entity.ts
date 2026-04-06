@@ -60,7 +60,7 @@ export class Depense {
   materiel?: Materiel;
 
   // --- Site concerné ---
-  @ManyToOne(() => Site, { nullable: true })
+  @ManyToOne(() => Site, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'siteId' })
   site?: Site;
 

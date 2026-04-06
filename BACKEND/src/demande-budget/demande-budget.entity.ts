@@ -33,7 +33,7 @@ export class DemandeBudget {
   })
   statut: StatutDemande;
 
-  @ManyToOne(() => Site, (site) => site.demandesBudget, { eager: true })
+  @ManyToOne(() => Site, (site) => site.demandesBudget, { eager: true, nullable: true, onDelete: 'CASCADE' })
   site: Site;
 
   @ManyToOne(() => User, (user) => user.demandesBudget, { eager: true })

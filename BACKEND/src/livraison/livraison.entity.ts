@@ -23,7 +23,7 @@ export class Livraison {
   id: string;
 
   // ---- DEMANDE D'ACHAT ----
-  @ManyToOne(() => DemandeAchat, { eager: true })
+  @ManyToOne(() => DemandeAchat, { eager: true, nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'demandeAchatId' })
   demandeAchat: DemandeAchat;
 
@@ -33,7 +33,7 @@ export class Livraison {
   vehicule: Vehicule;
 
   // ---- SITE ----
-  @ManyToOne(() => Site, { eager: true })
+  @ManyToOne(() => Site, { eager: true, nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'siteId' })
   site: Site;
 

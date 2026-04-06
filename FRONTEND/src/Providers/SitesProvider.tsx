@@ -8,6 +8,7 @@ interface SiteContextInterface {
     sites: Site[];
     addSite: (data: any) => Promise<void>;
     updateSite: (id: string, data: any) => Promise<void>;
+    deleteSite: (id: string) => Promise<void>;
     getSites: () => Promise<void>;
 }
 
@@ -47,13 +48,15 @@ const addFiles = async (data: any, id: string, type: string) => {
 
 const updateEmployes = async (data: any[], siteId: string) => {
     await Promise.all(
-        data.map(emp => {
-            const formData = new FormData();
-            formData.append('salaire', String(emp.salaire));
-            formData.append('siteId', siteId);
+        data
+            .filter(emp => !emp.isHistorical) // Skip employees already reassigned to another site
+            .map(emp => {
+                const formData = new FormData();
+                formData.append('salaire', String(emp.salaire));
+                formData.append('siteId', siteId);
 
-            return api.patch(`/employes/${emp.id}`, formData);
-        })
+                return api.patch(`/employes/${emp.id}`, formData);
+            })
     );
 };
 
@@ -129,13 +132,25 @@ export const SitesProvider = ({ children }: { children: React.ReactNode }) => {
         }
     };
 
+    const deleteSite = async (id: string) => {
+        try {
+            await api.delete(`/sites/${id}`);
+            getSites();
+        } catch (error) {
+            console.error("Erreur lors de la suppression du site:", error);
+            throw error;
+        }
+    };
+
     const updateSite = async (id: string, data: any) => {
         try {
             await api.patch(`/sites/${id}`, SiteInfo(data));
             if (!roleID) return;
+            // Await employees first so salary Depense records are created before
+            // the caller can unassign them (terminated-site flow)
+            await updateEmployes(data.data.siteEmployees, id);
             addFiles(data.photos, id, 'photos');
             addFiles(data.files, id, 'fichiers');
-            updateEmployes(data.data.siteEmployees, id);
             UpdateMaterials(data.data.selectedMaterials, id);
             UpdataExpenses(data.data.otherExpenses, roleID, id);
             getSites();
@@ -154,6 +169,7 @@ export const SitesProvider = ({ children }: { children: React.ReactNode }) => {
         addSite,
         getSites,
         updateSite,
+        deleteSite,
     };
 
     return (

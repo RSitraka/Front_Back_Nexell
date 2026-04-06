@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FaTrash, FaPlus, FaFilePdf, FaCar, FaUsers, FaTools, FaCoins, FaSave, FaTimes, FaDownload, FaImage } from 'react-icons/fa';
+import { FaTrash, FaPlus, FaFilePdf, FaCar, FaUsers, FaTools, FaCoins, FaSave, FaTimes, FaDownload, FaImage, FaCheckCircle, FaLock } from 'react-icons/fa';
 import { RiInformationLine } from "react-icons/ri";
 import { useMaterials } from '../../Providers/MatériauxProviders';
 import { useEmployes } from '../../Providers/EmployeProviders';
@@ -23,6 +23,7 @@ const Admin_Sites = () => {
     const [localisation, setLocalisation] = useState('');
     const [typeTravail, setType] = useState('Installation');
     const [status, setStatus] = useState('En cours');
+    const [originalStatus, setOriginalStatus] = useState('En cours');
     const [coordonneesGPS, setcoordonneesGPS] = useState('');
     const [description, setDescription] = useState('');
     const [newPhotos, setNewPhotos] = useState<File[]>([]);
@@ -40,7 +41,8 @@ const Admin_Sites = () => {
         isNew: boolean,
     }[]>([]);
     const [otherExpenses, setOtherExpenses] = useState<{ id: string, desc: string, demandeur: string, amount: number, isNew: boolean }[]>([]);
-    const [siteEmployees, setSiteEmployees] = useState<{ id: string, salaire: number, isNew: boolean }[]>([]);
+    const [siteEmployees, setSiteEmployees] = useState<{ id: string, salaire: number, isNew: boolean, isHistorical?: boolean, depenseId?: string }[]>([]);
+    const [savedDepenseTotal, setSavedDepenseTotal] = useState<number>(0);
 
     const [vehicle, setVehicle] = useState({
         active: false,
@@ -141,11 +143,13 @@ const Admin_Sites = () => {
             const { data } = await api.get(`/sites/${id}`);
             if (!data.id) return;
             setSiteId(data.id);
+            setSavedDepenseTotal(Number(data.depenseTotal ?? 0));
             setcoordonneesGPS(data.coordonneesGPS);
             setType(data.typeTravail);
             setDescription(data.description);
             setLocalisation(data.localisation);
             setStatus(data.statut);
+            setOriginalStatus(data.statut);
             setExistingFiles(data.fichiers);
             setExistingPhotos(data.photos);
             if (materials) {
@@ -154,23 +158,41 @@ const Admin_Sites = () => {
                     addMaterial(mat.materiel.id, false, mat.quantite, mat.id);
                 });
             }
-            if (Employes) {
-                setSiteEmployees([]);
-                data.employes.forEach((emp: any) => {
-                    addEmployee(emp.id, false);
-                })
-            }
-            if (data.depenses) {
-                const newExpenses = data.depenses.map((dep: any) => ({
-                    id: dep.id,
-                    desc: dep.description,
-                    amount: dep.montant,
-                    demandeur: dep.demandeur.nom + " " + dep.demandeur.prenom,
-                    isNew: false
+            const currentEmpIds = new Set((data.employes || []).map((e: any) => e.id));
+
+            // Employees currently assigned to this site
+            const currentEmployees = (data.employes || []).map((e: any) => ({
+                id: e.id,
+                salaire: e.salaire,
+                isNew: false,
+                isHistorical: false,
+            }));
+
+            // Historical employees found via salary depenses (reassigned to another site)
+            const historicalEmployees = (data.depenses || [])
+                .filter((dep: any) => dep.type === 'Salaire employé (avec avance)' && dep.employe && !currentEmpIds.has(dep.employe.id))
+                .map((dep: any) => ({
+                    id: dep.employe.id,
+                    salaire: Number(dep.montant),
+                    isNew: false,
+                    isHistorical: true,
+                    depenseId: dep.id,
                 }));
+
+            setSiteEmployees([...currentEmployees, ...historicalEmployees]);
+
+            if (data.depenses) {
+                const newExpenses = data.depenses
+                    .filter((dep: any) => dep.type !== 'Salaire employé (avec avance)')
+                    .map((dep: any) => ({
+                        id: dep.id,
+                        desc: dep.description,
+                        amount: dep.montant,
+                        demandeur: dep.demandeur ? dep.demandeur.nom + " " + dep.demandeur.prenom : "",
+                        isNew: false
+                    }));
                 setOtherExpenses(newExpenses);
             }
-            setSiteEmployees(data.employes);
             // setOtherExpenses(data.depenses);
         }
         catch (e) { setError(true); }
@@ -193,7 +215,16 @@ const Admin_Sites = () => {
         return matTotal + expTotal + empTotal + vehTotal;
     };
 
-    const totalExpense = calculateTotal();
+    const computed = calculateTotal();
+    // For existing sites: if the local recalculation gives 0 but the backend
+    // returned a non-zero depenseTotal (e.g. old sites without Depense records
+    // for salaries), show the saved value to avoid misleading the user.
+    const totalExpense = computed > 0 ? computed : (isEditing ? savedDepenseTotal : 0);
+
+    // Lecture seule uniquement si le site était DÉJÀ terminé en base.
+    // Si l'utilisateur change le dropdown de "En cours" → "Terminé", isTerminated
+    // reste false jusqu'à la prochaine ouverture (après sauvegarde).
+    const isTerminated = isEditing && originalStatus === 'Terminé';
 
     const addMaterial = (materialId: string, isNew: boolean, quantite: number, id: string) => {
         const exists = selectedMaterials.find(item => item.materielId === materialId);
@@ -218,8 +249,9 @@ const Admin_Sites = () => {
     };
     const deleteMaterials = async (idx: number) => {
         if (!window.confirm("Voulez-vous supprimer cette demande ?")) return;
-        if (!selectedMaterials[idx].isNew) {
-            await api.delete(`/demandes-materiel/${selectedMaterials[idx].id}`)
+        const mat = selectedMaterials[idx];
+        if (!mat.isNew) {
+            await api.delete(`/demandes-materiel/${mat.id}`);
         }
         const start = [...selectedMaterials];
         start.splice(idx, 1);
@@ -251,8 +283,24 @@ const Admin_Sites = () => {
 
     const removeEmploye = async (idx: number) => {
         if (!window.confirm("Voulez-vous enlever cet employé")) return;
-        if (!siteEmployees[idx].isNew) {
-            await api.patch(`/employes/${siteEmployees[idx].id}`, { siteId: null });
+        const emp = siteEmployees[idx];
+        if (!emp.isNew) {
+            if (emp.isHistorical && emp.depenseId) {
+                // Remove the historical salary depense record
+                await api.delete(`/depenses/${emp.depenseId}`);
+            } else {
+                // Delete the salary depense for this employee on this site (bad manipulation)
+                if (siteId) {
+                    try {
+                        const { data: siteData } = await api.get(`/sites/${siteId}`);
+                        const salaireDeps = (siteData.depenses || []).filter(
+                            (dep: any) => dep.type === 'Salaire employé (avec avance)' && dep.employe?.id === emp.id
+                        );
+                        await Promise.all(salaireDeps.map((dep: any) => api.delete(`/depenses/${dep.id}`)));
+                    } catch {}
+                }
+                await api.patch(`/employes/${emp.id}`, { siteId: null });
+            }
         }
         const start = [...siteEmployees];
         start.splice(idx, 1);
@@ -270,6 +318,7 @@ const Admin_Sites = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
         const siteData = {
             typeTravail,
             status,
@@ -291,9 +340,20 @@ const Admin_Sites = () => {
 
         if (isEditing) {
             await updateSite(siteId, dataToSend);
+            // Quand le site est terminé, désaffecter tous les employés actuellement
+            // assignés. Les dépenses salariales restent liées au site.
+            if (status === 'Terminé') {
+                const toUnassign = siteEmployees.filter(emp => !emp.isHistorical);
+                if (toUnassign.length > 0) {
+                    await Promise.all(
+                        toUnassign.map(emp =>
+                            api.patch(`/employes/${emp.id}`, { siteId: null })
+                        )
+                    );
+                }
+            }
             navigate('/');
-        }
-        else {
+        } else {
             await addSite(dataToSend);
             navigate('/');
         }
@@ -323,7 +383,7 @@ const Admin_Sites = () => {
     // };
 
     const sectionTitle = "text-[#6090A0] text-lg font-bold flex items-center gap-2 mb-4 border-b border-gray-700 pb-2";
-    const inputStyle = "w-full bg-[#101728] border border-gray-600 rounded p-2 text-white focus:border-[#208060] focus:outline-none";
+    const inputStyle = "w-full bg-[#101728] border border-gray-600 rounded p-2 text-white focus:border-[#208060] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed";
     const cardStyle = "bg-[#1a2332] p-6 rounded-xl shadow-md mb-6";
     const btnRed = "bg-[#A02020] hover:bg-red-700 text-white p-2 rounded";
     const gradientBtn = "bg-gradient-to-r from-[#208060] to-[#6090A0] hover:opacity-90 text-white px-4 py-2 rounded shadow transition";
@@ -336,14 +396,21 @@ const Admin_Sites = () => {
                 </h1>
             </div> :
                 <div className="text-white max-w-5xl mx-auto pb-20">
-                    <h1 className="text-3xl font-bold mb-8 text-white">Gestion de Site</h1>
+                    <h1 className="text-3xl font-bold mb-4 text-white">Gestion de Site</h1>
+
+                    {isTerminated && (
+                        <div className="mb-6 flex items-center gap-3 bg-gray-800 border border-gray-600 text-gray-300 px-5 py-3 rounded-xl">
+                            <FaCheckCircle className="text-[#208060] text-lg shrink-0" />
+                            <span className="text-sm font-medium">Site terminé — consultation uniquement. Aucune modification possible.</span>
+                        </div>
+                    )}
 
                     <div className={cardStyle}>
                         <h2 className={sectionTitle}><RiInformationLine /> Informations Générales</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-gray-400 text-sm mb-1">Type de travail</label>
-                                <select required className={inputStyle} value={typeTravail} onChange={e => setType(e.target.value)}>
+                                <select required disabled={isTerminated} className={inputStyle} value={typeTravail} onChange={e => setType(e.target.value)}>
                                     <option>Calibrage</option>
                                     <option>Installation</option>
                                     <option>Maintenance</option>
@@ -351,18 +418,18 @@ const Admin_Sites = () => {
                             </div>
                             <div>
                                 <label className="block text-gray-400 text-sm mb-1">Status</label>
-                                <select required className={inputStyle} value={status} onChange={e => setStatus(e.target.value)}>
+                                <select required disabled={isTerminated} className={inputStyle} value={status} onChange={e => setStatus(e.target.value)}>
                                     <option>En cours</option>
                                     <option>Terminé</option>
                                 </select>
                             </div>
                             <div className="md:col-span-2">
                                 <label className="block text-gray-400 text-sm mb-1">Description du travail</label>
-                                <textarea required rows={2} className={inputStyle} placeholder="Description des tâches sur lieux..." value={description} onChange={e => setDescription(e.target.value)} />
+                                <textarea required disabled={isTerminated} rows={2} className={inputStyle} placeholder="Description des tâches sur lieux..." value={description} onChange={e => setDescription(e.target.value)} />
                             </div>
                             <div className="md:col-span-2">
                                 <label className="block text-gray-400 text-sm mb-1">Localisation</label>
-                                <input required type="text" className={inputStyle} placeholder="Antananarivo, Analakely" value={localisation} onChange={e => setLocalisation(e.target.value)} />
+                                <input required disabled={isTerminated} type="text" className={inputStyle} placeholder="Antananarivo, Analakely" value={localisation} onChange={e => setLocalisation(e.target.value)} />
                             </div>
                             <div className="md:col-span-2">
                                 <label className="block text-gray-400 text-sm mb-1">
@@ -372,6 +439,7 @@ const Admin_Sites = () => {
                                 <div className="flex gap-2">
                                     <input
                                         required
+                                        disabled={isTerminated}
                                         type="text"
                                         className={inputStyle}
                                         placeholder="https://maps.google.com/..."
@@ -394,21 +462,23 @@ const Admin_Sites = () => {
 
                     <div className={cardStyle}>
                         <h2 className={sectionTitle}><FaTools /> Matériaux Utilisés</h2>
-                        <div className="flex gap-2 mb-4">
-                            <select id="matSelect" className={inputStyle}>
-                                <option value="">-- Choisir un matériel --</option>
-                                {materials.map(m => (
-                                    <option key={m.id} value={m.id}>{m.nom} ({m.modele}) - {m.prix} Ar</option>
-                                ))}
-                            </select>
-                            <button
-                                onClick={() => {
-                                    const select = document.getElementById('matSelect') as HTMLSelectElement;
-                                    if (select.value) addMaterial(select.value, true, 1, select.value);
-                                }}
-                                className={gradientBtn}
-                            >Ajouter</button>
-                        </div>
+                        {!isTerminated && (
+                            <div className="flex gap-2 mb-4">
+                                <select id="matSelect" className={inputStyle}>
+                                    <option value="">-- Choisir un matériel --</option>
+                                    {materials.map(m => (
+                                        <option key={m.id} value={m.id}>{m.nom} ({m.modele}) - {m.prix} Ar</option>
+                                    ))}
+                                </select>
+                                <button
+                                    onClick={() => {
+                                        const select = document.getElementById('matSelect') as HTMLSelectElement;
+                                        if (select.value) addMaterial(select.value, true, 1, select.value);
+                                    }}
+                                    className={gradientBtn}
+                                >Ajouter</button>
+                            </div>
+                        )}
 
                         {selectedMaterials.length > 0 && (
                             <table className="w-full text-sm text-left text-gray-300">
@@ -432,20 +502,21 @@ const Admin_Sites = () => {
                                                     <input
                                                         type="number"
                                                         min="1"
+                                                        disabled={isTerminated}
                                                         value={item.quantite ?? 0}
                                                         onChange={(e) => {
                                                             const val = e.target.value === '' ? 1 : parseInt(e.target.value);
                                                             updateMaterialquantite(idx, val);
                                                         }}
-                                                        className="w-16 bg-[#101728] rounded p-1"
+                                                        className="w-16 bg-[#101728] rounded p-1 disabled:opacity-50 disabled:cursor-not-allowed"
                                                     />
                                                 </td>
                                                 <td className="px-4 py-2 font-bold">{(item.priceRef * item.quantite).toLocaleString()} Ar</td>
-                                                <td className="px-4 py-2">
-                                                    <button onClick={() => {
-                                                        deleteMaterials(idx);
-                                                    }} className="text-[#A02020] hover:text-red-400"><FaTrash /></button>
-                                                </td>
+                                                {!isTerminated && (
+                                                    <td className="px-4 py-2">
+                                                        <button onClick={() => deleteMaterials(idx)} className="text-[#A02020] hover:text-red-400"><FaTrash /></button>
+                                                    </td>
+                                                )}
                                             </tr>
                                         )
                                     })}
@@ -461,6 +532,7 @@ const Admin_Sites = () => {
                                 {!exp.isNew && <p className={`${inputStyle}`}>{exp.demandeur}</p>}
                                 <input
                                     type="text"
+                                    disabled={isTerminated}
                                     placeholder="Description (ex: Batellage)"
                                     className={`${inputStyle}`}
                                     value={exp.desc}
@@ -472,6 +544,7 @@ const Admin_Sites = () => {
                                 />
                                 <input
                                     type="number"
+                                    disabled={isTerminated}
                                     placeholder="Montant"
                                     className={`${inputStyle}`}
                                     value={exp.amount === 0 ? '' : exp.amount}
@@ -482,14 +555,16 @@ const Admin_Sites = () => {
                                     }}
                                 />
                                 <span className="text-gray-400 text-sm">Ar</span>
-                                <button onClick={() => {
-                                    deleteExpenses(idx);
-                                }} className={btnRed}><FaTrash /></button>
+                                {!isTerminated && (
+                                    <button onClick={() => deleteExpenses(idx)} className={btnRed}><FaTrash /></button>
+                                )}
                             </div>
                         ))}
-                        <button onClick={addExpense} className="text-sm text-[#409090] hover:underline flex items-center gap-1 mt-2">
-                            <FaPlus /> Ajouter une ligne de dépense
-                        </button>
+                        {!isTerminated && (
+                            <button onClick={addExpense} className="text-sm text-[#409090] hover:underline flex items-center gap-1 mt-2">
+                                <FaPlus /> Ajouter une ligne de dépense
+                            </button>
+                        )}
                     </div>
 
                     {/* <div className={cardStyle}>
@@ -515,42 +590,58 @@ const Admin_Sites = () => {
                     </div> */}
                     <div className={cardStyle}>
                         <h2 className={sectionTitle}><FaUsers /> Employés & Salaires</h2>
-                        <div className="flex gap-2 mb-4">
-                            <select id="empSelect" className={inputStyle}>
-                                <option value="">-- Ajouter un employé --</option>
-                                {Employes.map(e => (
-                                    <option key={e.id} value={e.id}>{e.nom} {e.prenom}</option>
-                                ))}
-                            </select>
-                            <button
-                                onClick={() => {
-                                    const select = document.getElementById('empSelect') as HTMLSelectElement;
-                                    if (select.value) addEmployee(select.value, true);
-                                }}
-                                className={gradientBtn}
-                            >Ajouter</button>
-                        </div>
+
+                        {!isTerminated && (
+                            <div className="flex gap-2 mb-4">
+                                <select id="empSelect" className={inputStyle}>
+                                    <option value="">-- Ajouter un employé --</option>
+                                    {Employes.map(e => (
+                                        <option key={e.id} value={e.id}>{e.nom} {e.prenom}</option>
+                                    ))}
+                                </select>
+                                <button
+                                    onClick={() => {
+                                        const select = document.getElementById('empSelect') as HTMLSelectElement;
+                                        if (select.value) addEmployee(select.value, true);
+                                    }}
+                                    className={gradientBtn}
+                                >Ajouter</button>
+                            </div>
+                        )}
+
+                        {siteEmployees.length === 0 && (
+                            <p className="text-gray-500 text-sm italic">Aucun employé affecté à ce site.</p>
+                        )}
 
                         {siteEmployees.map((siteEmp, idx) => {
                             const empData = Employes.find(e => e.id === siteEmp.id);
+                            const locked = isTerminated || !!siteEmp.isHistorical;
                             return (
-                                <div key={idx} className="flex justify-between items-center bg-[#101728] p-3 rounded mb-2 border border-gray-700">
+                                <div key={idx} className={`flex justify-between items-center p-3 rounded mb-2 border ${siteEmp.isHistorical ? 'bg-[#0d1520] border-gray-700/50 opacity-80' : 'bg-[#101728] border-gray-700'}`}>
                                     <div>
-                                        <p className="font-bold">{empData?.nom} {empData?.prenom}</p>
+                                        <div className="flex items-center gap-2">
+                                            <p className="font-bold">{empData?.nom} {empData?.prenom}</p>
+                                            {siteEmp.isHistorical && (
+                                                <span className="text-[10px] bg-gray-700 text-gray-400 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                                    <FaLock size={8} /> Ancien employé
+                                                </span>
+                                            )}
+                                        </div>
                                         <p className="text-xs text-gray-500">{empData?.numeroTelephone}</p>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <label className="text-xs text-gray-400">Salaire/Avance:</label>
                                         <input
                                             type="number"
+                                            disabled={locked}
                                             className={`${inputStyle} w-32`}
                                             value={siteEmp.salaire === 0 ? '' : siteEmp.salaire}
                                             onChange={(e) => updatesalaire(idx, Number(e.target.value))}
                                         />
                                         <span className="text-sm">Ar</span>
-                                        <button onClick={() => {
-                                            removeEmploye(idx);
-                                        }} className={btnRed}><FaTrash /></button>
+                                        {!locked && (
+                                            <button onClick={() => removeEmploye(idx)} className={btnRed}><FaTrash /></button>
+                                        )}
                                     </div>
                                 </div>
                             )
@@ -561,13 +652,15 @@ const Admin_Sites = () => {
                         <div className={cardStyle}>
                             <h2 className={sectionTitle}><FaImage /> Galerie Photos</h2>
 
-                            <input
-                                type="file"
-                                multiple
-                                accept="image/*"
-                                onChange={handleNewPhotosUpload}
-                                className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#208060]/20 file:text-[#409090] hover:file:bg-[#208060]/30 cursor-pointer"
-                            />
+                            {!isTerminated && (
+                                <input
+                                    type="file"
+                                    multiple
+                                    accept="image/*"
+                                    onChange={handleNewPhotosUpload}
+                                    className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#208060]/20 file:text-[#409090] hover:file:bg-[#208060]/30 cursor-pointer"
+                                />
+                            )}
 
                             <div className="mt-4 flex flex-wrap gap-3">
                                 {existingPhotos.map((f) => (
@@ -579,7 +672,7 @@ const Admin_Sites = () => {
                                         )}
                                         <div className="absolute inset-0 bg-black/60 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <button type="button" onClick={() => downloadFile(f, 'photos')} className="text-[#6090A0] hover:text-white"><FaDownload size={12} /></button>
-                                            <button type="button" onClick={() => handleDeleteExisting(f.id, 'photos')} className="text-[#A02020] hover:text-red-400"><FaTrash size={12} /></button>
+                                            {!isTerminated && <button type="button" onClick={() => handleDeleteExisting(f.id, 'photos')} className="text-[#A02020] hover:text-red-400"><FaTrash size={12} /></button>}
                                         </div>
                                     </div>
                                 ))}
@@ -602,13 +695,15 @@ const Admin_Sites = () => {
                         <div className={cardStyle}>
                             <h2 className={sectionTitle}><FaFilePdf /> Fichiers & Scans</h2>
 
-                            <input
-                                type="file"
-                                multiple
-                                accept=".pdf,.doc,.docx"
-                                onChange={handleNewFilesUpload}
-                                className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#208060]/20 file:text-[#409090] hover:file:bg-[#208060]/30 cursor-pointer"
-                            />
+                            {!isTerminated && (
+                                <input
+                                    type="file"
+                                    multiple
+                                    accept=".pdf,.doc,.docx"
+                                    onChange={handleNewFilesUpload}
+                                    className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#208060]/20 file:text-[#409090] hover:file:bg-[#208060]/30 cursor-pointer"
+                                />
+                            )}
 
                             <div className="mt-4 flex flex-col gap-2">
                                 {existingFiles.length > 0 && <p className="text-xs text-gray-500 uppercase font-semibold">Enregistrés</p>}
@@ -619,7 +714,7 @@ const Admin_Sites = () => {
                                         </span>
                                         <div className="flex gap-3">
                                             <button type="button" onClick={() => downloadFile(f, 'fichiers')} className="text-[#6090A0] hover:text-white" title="Télécharger"><FaDownload /></button>
-                                            <button type="button" onClick={() => handleDeleteExisting(f.id, 'fichiers')} className="text-[#A02020] hover:text-red-400" title="Supprimer"><FaTrash /></button>
+                                            {!isTerminated && <button type="button" onClick={() => handleDeleteExisting(f.id, 'fichiers')} className="text-[#A02020] hover:text-red-400" title="Supprimer"><FaTrash /></button>}
                                         </div>
                                     </div>
                                 ))}
@@ -651,19 +746,25 @@ const Admin_Sites = () => {
                                     {totalExpense.toLocaleString()} Ar
                                 </span>
                             </div>
-                            <button
-                                disabled={!isFormValid}
-                                onClick={handleSubmit}
-                                className={`
-									px-8 py-3 rounded-lg font-bold shadow-lg flex items-center gap-2 transition-all
-									${!isFormValid
-                                        ? 'bg-gray-600 text-gray-400 cursor-not-allowed opacity-50'
-                                        : 'bg-gradient-to-r from-[#208060] to-[#409090] text-white hover:scale-105 cursor-pointer'
-                                    }
-								`}
-                            >
-                                <FaSave /> ENREGISTRER LE SITE
-                            </button>
+                            {isTerminated ? (
+                                <div className="flex items-center gap-2 bg-gray-700 text-gray-300 px-6 py-3 rounded-lg font-bold">
+                                    <FaLock /> SITE TERMINÉ — LECTURE SEULE
+                                </div>
+                            ) : (
+                                <button
+                                    disabled={!isFormValid}
+                                    onClick={handleSubmit}
+                                    className={`
+                                        px-8 py-3 rounded-lg font-bold shadow-lg flex items-center gap-2 transition-all
+                                        ${!isFormValid
+                                            ? 'bg-gray-600 text-gray-400 cursor-not-allowed opacity-50'
+                                            : 'bg-gradient-to-r from-[#208060] to-[#409090] text-white hover:scale-105 cursor-pointer'
+                                        }
+                                    `}
+                                >
+                                    <FaSave /> ENREGISTRER LE SITE
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>}

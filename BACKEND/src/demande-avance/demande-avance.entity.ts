@@ -37,7 +37,7 @@ export class DemandeAvance {
   @ManyToOne(() => User, (user) => user.demandesAvance)
   demandeur: User;
 
-  @ManyToOne(() => Site, (site) => site.demandesAvance, { nullable: true })
+  @ManyToOne(() => Site, (site) => site.demandesAvance, { nullable: true, onDelete: 'SET NULL' })
   site: Site;
 
   @CreateDateColumn()

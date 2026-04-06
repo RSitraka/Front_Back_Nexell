@@ -11,6 +11,7 @@ import { CreateEmployeDto } from './dto/create-employe.dto';
 import { UpdateEmployeDto } from './dto/update-employe.dto';
 import { User } from '../user/user.entity';
 import { Site } from '../site/site.entity';
+import { Depense, TypeDepense } from '../depense/depense.entity';
 
 import * as bcrypt from 'bcrypt';
 import { UserRole } from '../user/enums/user-role.enum';
@@ -26,6 +27,7 @@ export class EmployeService {
     @InjectRepository(User) private userRepository: Repository<User>,
     @InjectRepository(Fichier) private fichierRepository: Repository<Fichier>,
     @InjectRepository(Site) private siteRepository: Repository<Site>,
+    @InjectRepository(Depense) private depenseRepository: Repository<Depense>,
     private readonly fichierService: FichierService,
   ) { }
 
@@ -129,6 +131,7 @@ export class EmployeService {
       employe.scanCertificats ??= [];
       employe.scanCertificats.push(...savedFichiers);
     }
+    let assignedSite: Site | null = null;
     if ('siteId' in dto) {
       if (dto.siteId === null) {
         employe.site = null;
@@ -136,8 +139,8 @@ export class EmployeService {
         const site = await this.siteRepository.findOneBy({
           id: dto.siteId,
         });
-
         employe.site = site ?? null;
+        assignedSite = site ?? null;
       }
 
       delete dto.siteId;
@@ -153,8 +156,37 @@ export class EmployeService {
       }
       employe.scanPhotoCIN = await this.fichierRepository.save(f);
     }
+    const newSalaire = 'salaire' in dto ? Number(dto.salaire) : undefined;
     Object.assign(employe, dto);
-    return await this.employeRepository.save(employe);
+    const saved = await this.employeRepository.save(employe);
+
+    // Persist salary as a Depense record so it remains linked to the site
+    // even after the employee is reassigned to another site
+    if (assignedSite && newSalaire !== undefined && newSalaire > 0) {
+      const existing = await this.depenseRepository.findOne({
+        where: {
+          employe: { id: saved.id },
+          site: { id: assignedSite.id },
+          type: TypeDepense.SALAIRE,
+        },
+      });
+      if (existing) {
+        existing.montant = newSalaire;
+        await this.depenseRepository.save(existing);
+      } else {
+        await this.depenseRepository.save(
+          this.depenseRepository.create({
+            type: TypeDepense.SALAIRE,
+            montant: newSalaire,
+            employe: saved,
+            site: assignedSite,
+            description: `Salaire ${saved.nom} ${saved.prenom}`,
+          }),
+        );
+      }
+    }
+
+    return saved;
   }
 
 

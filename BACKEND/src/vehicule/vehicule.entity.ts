@@ -31,7 +31,7 @@ export class Vehicule {
   @Column()
   numeroTelephoneConducteur: string;
 
-  @ManyToOne(() => Site, (site) => site.vehicules, { nullable: true })
+  @ManyToOne(() => Site, (site) => site.vehicules, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'siteId' })
   site?: Site;
 

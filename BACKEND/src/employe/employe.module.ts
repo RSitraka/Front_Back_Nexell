@@ -8,9 +8,10 @@ import { User } from '../user/user.entity';
 import { Site } from '../site/site.entity';
 import { Fichier } from '../fichier/fichier.entity';
 import { FichierModule } from '../fichier/fichier.module';
+import { Depense } from '../depense/depense.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Employe, User, Site, Fichier]),
+  imports: [TypeOrmModule.forFeature([Employe, User, Site, Fichier, Depense]),
     FichierModule],
   controllers: [EmployeController],
   providers: [EmployeService],

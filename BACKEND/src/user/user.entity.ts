@@ -55,7 +55,7 @@ export class User {
   employe?: Employe; // ou Employe | null
 
   // Site où est affecté l'utilisateur
-  @ManyToOne(() => Site, (site) => site.users, { nullable: true })
+  @ManyToOne(() => Site, (site) => site.users, { nullable: true, onDelete: 'SET NULL' })
   site?: Site;
 
   // --- RELATIONS AVEC DEPENSES ---

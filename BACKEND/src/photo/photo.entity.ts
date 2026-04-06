@@ -21,7 +21,7 @@ export class Photo {
   @Column()
   originalName: string;
 
-  @ManyToOne(() => Site, (site) => site.photos)
+  @ManyToOne(() => Site, (site) => site.photos, { nullable: true, onDelete: 'CASCADE' })
   site: Site;
 
   @CreateDateColumn()
