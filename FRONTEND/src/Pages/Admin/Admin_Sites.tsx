@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { FaTrash, FaPlus, FaFilePdf, FaCar, FaUsers, FaTools, FaCoins, FaSave, FaTimes, FaDownload, FaImage, FaCheckCircle, FaLock } from 'react-icons/fa';
+import { FaTrash, FaPlus, FaFilePdf, FaUsers, FaTools, FaCoins, FaSave, FaTimes, FaDownload, FaImage, FaCheckCircle, FaLock } from 'react-icons/fa';
 import { RiInformationLine } from "react-icons/ri";
+import ConfirmModal from '../../Components/UI/ConfirmModal';
 import { useMaterials } from '../../Providers/MatériauxProviders';
 import { useEmployes } from '../../Providers/EmployeProviders';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -52,6 +53,13 @@ const Admin_Sites = () => {
         cost: 0
     });
 
+    const [confirmState, setConfirmState] = useState<{
+        open: boolean;
+        title: string;
+        message: string;
+        onConfirm: () => void;
+    }>({ open: false, title: '', message: '', onConfirm: () => {} });
+
     useEffect(() => {
         const loadPreviews = async () => {
             const previews: { [key: string]: string } = {};
@@ -92,26 +100,34 @@ const Admin_Sites = () => {
         }
     };
 
-    const handleDeleteExisting = async (fileId: string, type: 'photos' | 'fichiers') => {
-        if (!window.confirm("Supprimer ce fichier définitivement ?")) return;
+    const askConfirm = (title: string, message: string, onConfirm: () => void) => {
+        setConfirmState({ open: true, title, message, onConfirm });
+    };
 
-        try {
-            await api.delete(`/${type}/${fileId}`);
-
-            if (type === 'photos') {
-                setExistingPhotos(prev => prev.filter(f => f.id !== fileId));
-                if (existingPhotoPreviews[fileId]) {
-                    URL.revokeObjectURL(existingPhotoPreviews[fileId]);
-                    const newPreviews = { ...existingPhotoPreviews };
-                    delete newPreviews[fileId];
-                    setExistingPhotoPreviews(newPreviews);
+    const handleDeleteExisting = (fileId: string, type: 'photos' | 'fichiers') => {
+        askConfirm(
+            "Supprimer ce fichier ?",
+            "Cette action est irréversible.",
+            async () => {
+                setConfirmState(s => ({ ...s, open: false }));
+                try {
+                    await api.delete(`/${type}/${fileId}`);
+                    if (type === 'photos') {
+                        setExistingPhotos(prev => prev.filter(f => f.id !== fileId));
+                        if (existingPhotoPreviews[fileId]) {
+                            URL.revokeObjectURL(existingPhotoPreviews[fileId]);
+                            const newPreviews = { ...existingPhotoPreviews };
+                            delete newPreviews[fileId];
+                            setExistingPhotoPreviews(newPreviews);
+                        }
+                    } else {
+                        setExistingFiles(prev => prev.filter(f => f.id !== fileId));
+                    }
+                } catch (error) {
+                    console.error("Erreur suppression", error);
                 }
-            } else {
-                setExistingFiles(prev => prev.filter(f => f.id !== fileId));
             }
-        } catch (error) {
-            console.error("Erreur suppression", error);
-        }
+        );
     };
 
     const handleNewPhotosUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -247,25 +263,37 @@ const Admin_Sites = () => {
 
         }
     };
-    const deleteMaterials = async (idx: number) => {
-        if (!window.confirm("Voulez-vous supprimer cette demande ?")) return;
-        const mat = selectedMaterials[idx];
-        if (!mat.isNew) {
-            await api.delete(`/demandes-materiel/${mat.id}`);
-        }
-        const start = [...selectedMaterials];
-        start.splice(idx, 1);
-        setSelectedMaterials(start);
-    }
-    const deleteExpenses = async (idx: number) => {
-        if (!window.confirm("Voulez-vous supprimer ce dépense ?")) return;
-        if (!otherExpenses[idx].isNew) {
-            await api.delete(`/depenses/${otherExpenses[idx].id}`)
-        }
-        const updated = [...otherExpenses];
-        updated.splice(idx, 1);
-        setOtherExpenses(updated);
-    }
+    const deleteMaterials = (idx: number) => {
+        askConfirm(
+            "Supprimer ce matériau ?",
+            "La demande de matériel associée sera supprimée.",
+            async () => {
+                setConfirmState(s => ({ ...s, open: false }));
+                const mat = selectedMaterials[idx];
+                if (!mat.isNew) {
+                    await api.delete(`/demandes-materiel/${mat.id}`);
+                }
+                const start = [...selectedMaterials];
+                start.splice(idx, 1);
+                setSelectedMaterials(start);
+            }
+        );
+    };
+    const deleteExpenses = (idx: number) => {
+        askConfirm(
+            "Supprimer cette dépense ?",
+            "Cette dépense sera retirée du total du site.",
+            async () => {
+                setConfirmState(s => ({ ...s, open: false }));
+                if (!otherExpenses[idx].isNew) {
+                    await api.delete(`/depenses/${otherExpenses[idx].id}`);
+                }
+                const updated = [...otherExpenses];
+                updated.splice(idx, 1);
+                setOtherExpenses(updated);
+            }
+        );
+    };
 
 
     const updateMaterialquantite = (index: number, newquantite: number) => {
@@ -281,31 +309,35 @@ const Admin_Sites = () => {
         }
     };
 
-    const removeEmploye = async (idx: number) => {
-        if (!window.confirm("Voulez-vous enlever cet employé")) return;
-        const emp = siteEmployees[idx];
-        if (!emp.isNew) {
-            if (emp.isHistorical && emp.depenseId) {
-                // Remove the historical salary depense record
-                await api.delete(`/depenses/${emp.depenseId}`);
-            } else {
-                // Delete the salary depense for this employee on this site (bad manipulation)
-                if (siteId) {
-                    try {
-                        const { data: siteData } = await api.get(`/sites/${siteId}`);
-                        const salaireDeps = (siteData.depenses || []).filter(
-                            (dep: any) => dep.type === 'Salaire employé (avec avance)' && dep.employe?.id === emp.id
-                        );
-                        await Promise.all(salaireDeps.map((dep: any) => api.delete(`/depenses/${dep.id}`)));
-                    } catch {}
+    const removeEmploye = (idx: number) => {
+        askConfirm(
+            "Retirer cet employé ?",
+            "L'employé sera retiré du site et sa dépense salariale supprimée.",
+            async () => {
+                setConfirmState(s => ({ ...s, open: false }));
+                const emp = siteEmployees[idx];
+                if (!emp.isNew) {
+                    if (emp.isHistorical && emp.depenseId) {
+                        await api.delete(`/depenses/${emp.depenseId}`);
+                    } else {
+                        if (siteId) {
+                            try {
+                                const { data: siteData } = await api.get(`/sites/${siteId}`);
+                                const salaireDeps = (siteData.depenses || []).filter(
+                                    (dep: any) => dep.type === 'Salaire employé (avec avance)' && dep.employe?.id === emp.id
+                                );
+                                await Promise.all(salaireDeps.map((dep: any) => api.delete(`/depenses/${dep.id}`)));
+                            } catch {}
+                        }
+                        await api.patch(`/employes/${emp.id}`, { siteId: null });
+                    }
                 }
-                await api.patch(`/employes/${emp.id}`, { siteId: null });
+                const start = [...siteEmployees];
+                start.splice(idx, 1);
+                setSiteEmployees(start);
             }
-        }
-        const start = [...siteEmployees];
-        start.splice(idx, 1);
-        setSiteEmployees(start);
-    }
+        );
+    };
     const updatesalaire = (index: number, amount: number) => {
         const updated = [...siteEmployees];
         updated[index].salaire = Number(amount);
@@ -768,6 +800,16 @@ const Admin_Sites = () => {
                         </div>
                     </div>
                 </div>}
+
+            <ConfirmModal
+                isOpen={confirmState.open}
+                title={confirmState.title}
+                message={confirmState.message}
+                confirmLabel="Supprimer"
+                danger
+                onConfirm={confirmState.onConfirm}
+                onCancel={() => setConfirmState(s => ({ ...s, open: false }))}
+            />
         </>
     );
 };

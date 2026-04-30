@@ -6,6 +6,7 @@ import { useAuth } from "./AuthProvider";
 
 interface SiteContextInterface {
     sites: Site[];
+    isLoading: boolean;
     addSite: (data: any) => Promise<void>;
     updateSite: (id: string, data: any) => Promise<void>;
     deleteSite: (id: string) => Promise<void>;
@@ -104,14 +105,18 @@ const UpdataExpenses = async (data: any[], user: string, siteId: string) => {
 
 export const SitesProvider = ({ children }: { children: React.ReactNode }) => {
     const [sites, setSites] = useState<Site[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
     const { user, roleID } = useAuth();
 
     const getSites = async () => {
         try {
+            setIsLoading(true);
             const response = await api.get('/sites');
             setSites(response.data);
         } catch (error) {
             console.error("Erreur lors de la récupération des sites:", error);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -166,6 +171,7 @@ export const SitesProvider = ({ children }: { children: React.ReactNode }) => {
 
     const value = {
         sites,
+        isLoading,
         addSite,
         getSites,
         updateSite,

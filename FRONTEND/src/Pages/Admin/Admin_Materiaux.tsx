@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { FaEdit, FaTrash, FaPlus, FaBoxOpen, FaSearch, FaSave, FaTimes } from 'react-icons/fa';
 import type { Material } from '../../Utils/interface';
 import { useMaterials } from '../../Providers/MatériauxProviders';
+import ConfirmModal from '../../Components/UI/ConfirmModal';
 
 const Admin_Materiaux = () => {
     const { materials, deleteMaterials, addMatériaux, updateMateriaux } = useMaterials();
@@ -10,6 +11,14 @@ const Admin_Materiaux = () => {
     const [formData, setFormData] = useState<Partial<Material>>({
         nom: '', modele: '', nomFournisseur: '', prix: 0
     });
+    const [search, setSearch] = useState('');
+    const [confirmState, setConfirmState] = useState<{ open: boolean; title: string; message: string; onConfirm: () => void }>({
+        open: false, title: '', message: '', onConfirm: () => {}
+    });
+
+    const askConfirm = (title: string, message: string, onConfirm: () => void) => {
+        setConfirmState({ open: true, title, message, onConfirm });
+    };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -42,15 +51,27 @@ const Admin_Materiaux = () => {
     };
 
     const handleDelete = (id: string) => {
-        if (window.confirm('Supprimer ce matériel définitivement ?')) {
-            deleteMaterials(id);
-        }
+        askConfirm(
+            'Supprimer ce matériel ?',
+            'Cette action est irréversible. Le matériel sera définitivement supprimé.',
+            () => {
+                setConfirmState(s => ({ ...s, open: false }));
+                deleteMaterials(id);
+            }
+        );
     };
 
     const cancelEdit = () => {
         setIsEditing(false);
         setFormData({ nom: '', modele: '', nomFournisseur: '', prix: 0 });
     };
+
+    const filteredMaterials = useMemo(() =>
+        materials.filter(m =>
+            m.nom.toLowerCase().includes(search.toLowerCase()) ||
+            m.modele.toLowerCase().includes(search.toLowerCase()) ||
+            m.nomFournisseur.toLowerCase().includes(search.toLowerCase())
+        ), [materials, search]);
 
     const inputStyle = "w-full bg-[#101728] border border-gray-600 rounded p-2 \
 	text-white focus:border-[#208060] focus:outline-none";
@@ -99,13 +120,31 @@ const Admin_Materiaux = () => {
             </div>
 
             <div className="bg-[#1a2332] rounded-xl overflow-hidden shadow-xl">
-                <div className="p-4 border-b border-gray-700 flex justify-between items-center bg-[#151c28]">
-                    <div className="text-gray-400 text-sm">Total références : <span className="text-white font-bold">{materials.length}</span></div>
+                <div className="p-4 border-b border-gray-700 flex flex-col sm:flex-row gap-3 justify-between items-center bg-[#151c28]">
+                    <div className="text-gray-400 text-sm">
+                        Total références : <span className="text-white font-bold">{filteredMaterials.length}</span>
+                        {search && <span className="text-gray-500 ml-1">/ {materials.length}</span>}
+                    </div>
+                    <div className="relative w-full sm:w-72">
+                        <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs" />
+                        <input
+                            type="text"
+                            placeholder="Rechercher par nom, modèle, fournisseur..."
+                            value={search}
+                            onChange={e => setSearch(e.target.value)}
+                            className="w-full bg-[#101728] border border-gray-600 rounded pl-8 pr-3 py-2 text-sm text-white focus:border-[#208060] focus:outline-none"
+                        />
+                        {search && (
+                            <button onClick={() => setSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white">
+                                <FaTimes size={12} />
+                            </button>
+                        )}
+                    </div>
                 </div>
 
                 <div className="w-full">
                     <div className="grid grid-cols-1 gap-4 md:hidden">
-                        {materials.map((mat) => (
+                        {filteredMaterials.map((mat) => (
                             <div key={mat.id} className="bg-[#1f2a3d] p-5 rounded-xl shadow-lg border border-gray-700 relative">
 
                                 <div className="flex justify-between items-start mb-4">
@@ -147,9 +186,9 @@ const Admin_Materiaux = () => {
                             </div>
                         ))}
 
-                        {materials.length === 0 && (
+                        {filteredMaterials.length === 0 && (
                             <div className="text-center py-8 text-gray-500 bg-[#1f2a3d] rounded-xl">
-                                Aucun matériel.
+                                {search ? 'Aucun résultat pour cette recherche.' : 'Aucun matériel.'}
                             </div>
                         )}
                     </div>
@@ -166,7 +205,7 @@ const Admin_Materiaux = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-700 bg-[#1a2332]">
-                                {materials.map((mat) => (
+                                {filteredMaterials.map((mat) => (
                                     <tr key={mat.id} className="hover:bg-[#1f2a3d] transition-colors group">
                                         <td className="px-6 py-4 font-medium text-white flex items-center gap-3">
                                             <div className="bg-[#208060]/20 p-2 rounded text-[#208060]"><FaBoxOpen /></div>
@@ -189,9 +228,11 @@ const Admin_Materiaux = () => {
                                         </td>
                                     </tr>
                                 ))}
-                                {materials.length === 0 && (
+                                {filteredMaterials.length === 0 && (
                                     <tr>
-                                        <td colSpan={5} className="text-center py-8 text-gray-500">Aucun matériel enregistré pour le moment.</td>
+                                        <td colSpan={5} className="text-center py-8 text-gray-500">
+                                            {search ? 'Aucun résultat pour cette recherche.' : 'Aucun matériel enregistré pour le moment.'}
+                                        </td>
                                     </tr>
                                 )}
                             </tbody>
@@ -199,6 +240,15 @@ const Admin_Materiaux = () => {
                     </div>
                 </div>
             </div>
+
+            <ConfirmModal
+                isOpen={confirmState.open}
+                title={confirmState.title}
+                message={confirmState.message}
+                danger
+                onConfirm={confirmState.onConfirm}
+                onCancel={() => setConfirmState(s => ({ ...s, open: false }))}
+            />
         </div>
     );
 };

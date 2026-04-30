@@ -4,6 +4,7 @@ import { UserRole, type Employee, type FilesInterface } from '../../Utils/interf
 import { useEmployes } from '../../Providers/EmployeProviders';
 import api from '../../Utils/axios';
 import { useAuth } from '../../Providers/AuthProvider';
+import ConfirmModal from '../../Components/UI/ConfirmModal';
 
 const Admin_Employes = () => {
 
@@ -21,6 +22,13 @@ const Admin_Employes = () => {
 
     const [cinPreview, setCinPreview] = useState<string | null>(null);
     const [isLoadingImage, setIsLoadingImage] = useState(false);
+    const [confirmState, setConfirmState] = useState<{ open: boolean; title: string; message: string; onConfirm: () => void }>({
+        open: false, title: '', message: '', onConfirm: () => {}
+    });
+
+    const askConfirm = (title: string, message: string, onConfirm: () => void) => {
+        setConfirmState({ open: true, title, message, onConfirm });
+    };
 
     // Styles
     const inputStyle = "w-full bg-[#101728] border border-gray-600 rounded p-2 text-white focus:border-[#208060] focus:outline-none mb-3 transition-colors";
@@ -79,18 +87,26 @@ const Admin_Employes = () => {
         setNewCertificats(updated);
     };
 
-    const handleDeleteExistingFile = async (fileId: string, type: 'photos' | 'certificats') => {
-        if (!window.confirm("Voulez-vous supprimer ce fichier enregistré ?") || !editingId) return;
-        await api.delete(`/employes/${type}/${editingId}/${fileId}`);
-        if (type === 'photos') {
-            setExistingCin(null);
-            setCinPreview(null);
-        } else {
-            setExistingCertificats(prev => prev.filter(f => f.id !== fileId));
-        }
+    const handleDeleteExistingFile = (fileId: string, type: 'photos' | 'certificats') => {
+        if (!editingId) return;
+        askConfirm(
+            'Supprimer ce fichier ?',
+            'Ce fichier enregistré sera définitivement supprimé.',
+            async () => {
+                setConfirmState(s => ({ ...s, open: false }));
+                await api.delete(`/employes/${type}/${editingId}/${fileId}`);
+                if (type === 'photos') {
+                    setExistingCin(null);
+                    setCinPreview(null);
+                } else {
+                    setExistingCertificats(prev => prev.filter(f => f.id !== fileId));
+                }
+            }
+        );
     };
 
-    const handleEdit = async (emp: any) => {
+    type EmployeeAPI = Employee & { user: { id: string; role: string } };
+    const handleEdit = async (emp: EmployeeAPI) => {
         resetForm();
         setEditingId(emp.id);
 
@@ -151,10 +167,15 @@ const Admin_Employes = () => {
     };
 
     const handleDelete = (id: string) => {
-        if (window.confirm("Voulez-vous vraiment supprimer cet employé ?")) {
-            deleteEmployes(id);
-            if (editingId === id) handleCancelEdit();
-        }
+        askConfirm(
+            "Supprimer cet employé ?",
+            "Cette action est irréversible. L'employé sera définitivement supprimé.",
+            () => {
+                setConfirmState(s => ({ ...s, open: false }));
+                deleteEmployes(id);
+                if (editingId === id) handleCancelEdit();
+            }
+        );
     };
 
     return (
@@ -315,7 +336,7 @@ const Admin_Employes = () => {
                                     </div>
 
                                     <div className="flex gap-2">
-                                        <button onClick={() => handleEdit(emp)} className="text-[#6090A0] hover:text-white transition bg-[#101728] p-2 rounded-full" title="Modifier">
+                                        <button onClick={() => handleEdit(emp as EmployeeAPI)} className="text-[#6090A0] hover:text-white transition bg-[#101728] p-2 rounded-full" title="Modifier">
                                             <FaEdit />
                                         </button>
                                         <button onClick={() => handleDelete(emp.id)} className="bg-[#101728] p-2 rounded-full text-[#A02020] hover:bg-red-900/20 transition" title="Supprimer">
@@ -345,6 +366,15 @@ const Admin_Employes = () => {
                     )}
                 </div>
             </div>
+
+            <ConfirmModal
+                isOpen={confirmState.open}
+                title={confirmState.title}
+                message={confirmState.message}
+                danger
+                onConfirm={confirmState.onConfirm}
+                onCancel={() => setConfirmState(s => ({ ...s, open: false }))}
+            />
         </div>
     );
 };
